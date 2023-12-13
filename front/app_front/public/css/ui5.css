@@ -1,0 +1,68 @@
+body {
+    color: #00455d;
+    --_ui5-v1-20-0_button_focused_border: 0.125rem solid #00455d;
+    --sapContent_FocusColor: #00455d;
+    --sapButton_TextColor: #00455d;
+    --sapButton_BorderColor: #00455d;
+    --sapButton_Hover_Background: #00455d;
+    --sapButton_Hover_BorderColor: #00455d;
+    --sapButton_Active_TextColor: #00455d;
+    --sapButton_Active_BorderColor: #00455d;
+    --sapButton_Hover_TextColor: white;
+    --sapButton_Emphasized_TextColor: #00455d;
+    --sapButton_Emphasized_BorderColor: #00455d;
+    --sapButton_Emphasized_Background: white;
+    --sapButton_Emphasized_Hover_Background: #00455d;
+    --sapButton_Emphasized_Hover_BorderColor: #00455d;
+    --sapButton_Emphasized_Active_TextColor: #00455d;
+    --sapButton_Emphasized_Active_BorderColor: #00455d;
+    --sapButton_Emphasized_Hover_TextColor: white;
+    --_ui5-v1-20-0_dialog_resize_handle_color: #00455d;
+    --sapAccentColor1: #00455d;
+    --ui5-v1-17-0-avatar-accent1: #00455d;
+    --_ui5-v1-17-0_side_navigation_item_icon_color: #00455d;
+    --sapContent_IconColor: #00455d;
+    --ui5-v1-20-0-avatar-accent1: #00455d;
+    --ui5-v1-20-0-avatar-accent1-color: white;
+}
+
+ui5-input {
+    width: 100%;
+    text-align: center;
+}
+
+ui5-select {
+    width: 100%;
+    text-align: center;
+}
+
+ui5-date-picker {
+    width: 100%;
+    text-align: center;
+}
+
+ui5-step-input {
+    text-align: center;
+}
+
+ui5-card {
+    white-space: normal;
+    word-break: break-word;
+    overflow: auto;
+    border: 1px solid #00455d;
+    border-radius: 20px;
+}
+
+ui5-table-cell{
+    border: 1px solid #737270;
+    text-align: center
+}
+
+ui5-table-column{
+    border: 1px solid #737270;
+    text-align: center;
+}
+
+ui5-multi-combobox {
+    width: 100%;
+}
