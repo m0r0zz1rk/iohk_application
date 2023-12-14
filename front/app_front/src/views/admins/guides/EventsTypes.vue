@@ -1,7 +1,6 @@
 <template>
   <div style="height:  70vh">
-    <PaginationTable v-bind:recsCountURL="recsCountURL"
-                     v-bind:recsURL="recsURL"
+    <PaginationTable v-bind:recsURL="recsURL"
                      v-bind:recAddURL="recAddURL"
                      v-bind:recEditURL="recEditURL"
                      v-bind:recDeleteURL="recDeleteURL"
@@ -12,6 +11,7 @@
                      v-bind:addButton="addButton"
                      v-bind:tableColumns="tableColumns"
                      v-bind:fieldsArray="fieldsArray"
+                     v-bind:dataTableHeight="dataTableHeight"
     />
   </div>
 
@@ -25,7 +25,7 @@
     components: {PaginationTable},
     data() {
       return {
-        recsCountURL: '/api/v1/admins/events_types_count/',
+        dataTableHeight: 60,
         recsURL: '/api/v1/admins/events_types',
         recAddURL: '/api/v1/admins/events_type_new/',
         recEditURL: '/api/v1/admins/events_type_edit/',

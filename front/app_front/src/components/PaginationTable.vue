@@ -1,6 +1,6 @@
 <template>
   <div style="margin-left: 4px;">
-    <div style="height: 5vh">
+    <div style="height: 10%">
       <div>
         <div class="upper-table-container">
           <div>
@@ -48,11 +48,13 @@
         </div>
       </div>
     </div>
-    <div style="height: 60vh; overflow: auto">
+    <div id="data_table"  :style="{height: dataTableHeight + 'vh'}">
       <ui5-table :busy="tableBusy" sticky-column-header>
         <ui5-table-column slot="columns">№</ui5-table-column>
         <template v-for="col in tableColumns">
-          <ui5-table-column v-if="fieldsList.includes(col.alias)" slot="columns">
+          <ui5-table-column v-if="fieldsList.includes(col.alias)"
+                            style="white-space: nowrap"
+                            slot="columns">
             <div v-if="col.name === 'checkbox'">
               <ui5-checkbox refs="mainCheckBox"
                             @change="checkBoxRecAction('all')" />
@@ -176,31 +178,41 @@
               <template v-if="field.alias !== 'actions'">
                 <ui5-table-cell v-if="fieldsList.includes(field.alias)"
                                 :style="'white-space: '+field.whiteSpace">
-                  <ui5-badge v-if="row[field.alias] === true"
-                             color-scheme="8">
-                    <ui5-icon name="accept" />
-                  </ui5-badge>
-                  <ui5-badge v-if="row[field.alias] === false"
-                             color-scheme="2">
-                    <ui5-icon name="decline" />
-                  </ui5-badge>
-                  <ui5-checkbox v-if="field.alias === 'checkbox'"
-                                :checked="checkBoxRecs.includes(row.object_id)"
-                                @change="e => checkBoxRecAction(row.object_id)"/>
-                  <template v-if="field.alias !== 'checkbox'">
-                    <div v-if="row[field.alias] === null">-</div>
-                    <template v-if="row[field.alias] !== null">
-                      <div v-if="([true, false].includes(row[field.alias])) && (row[field.alias].constructor === Array)">
+                  <div v-if="[true, false].includes(row[field.alias])">
+                    <div v-if="field.alias === 'sex'">
+                      <SexBadge v-bind:sex="row[field.alias]" />
+                    </div>
+                    <div v-if="field.alias !== 'sex'">
+                      <div v-if="row[field.alias].constructor === Array">
                         <template v-for="value in row[field.alias]">
                           <ui5-badge v-if="value.constructor === Object" color-scheme="6">{{value.name}}</ui5-badge>
                           <ui5-badge v-if="value.constructor !== Object" color-scheme="6">{{value}}</ui5-badge>
                         </template>
                       </div>
-                      <div v-if="!(([true, false].includes(row[field.alias])) && (row[field.alias].constructor === Array))">
-                        {{row[field.alias]}}
+                      <div v-if="row[field.alias].constructor !== Array">
+                        <ui5-badge v-if="row[field.alias] === true"
+                                   color-scheme="8">
+                          <ui5-icon name="accept" />
+                        </ui5-badge>
+                        <ui5-badge v-if="row[field.alias] === false"
+                                   color-scheme="2">
+                          <ui5-icon name="decline" />
+                        </ui5-badge>
                       </div>
+                    </div>
+                  </div>
+                  <div v-if="!([true, false].includes(row[field.alias]))">
+                    <ui5-checkbox v-if="field.alias === 'checkbox'"
+                                  :checked="checkBoxRecs.includes(row.object_id)"
+                                  @change="e => checkBoxRecAction(row.object_id)"/>
+                    <template v-if="field.alias !== 'checkbox'">
+                      <div v-if="row[field.alias] === null">-</div>
+                      <template v-if="row[field.alias] !== null">
+                        {{row[field.alias]}}
+                      </template>
                     </template>
-                  </template>
+                  </div>
+
                 </ui5-table-cell>
               </template>
               <ui5-table-cell v-if="(field.alias === 'actions') && (fieldsList.includes('actions'))"
@@ -297,7 +309,7 @@
         </template>
       </ui5-table>
     </div>
-    <div style="height: 5vh">
+    <div style="height: 10%">
       <ui5-table :busy="tableBusy" class="no-head-table">
         <ui5-table-row type="Inactive">
           <ui5-table-cell id="pagination_cell" class="find-row-cell" style="width: 100%">
@@ -324,12 +336,12 @@
 
 <script>
 import PasswordField from "./PasswordField.vue";
+import SexBadge from "./SexBadge.vue";
 
 export default {
   name: 'PaginationTable',
-  components: {PasswordField},
+  components: {SexBadge, PasswordField},
   props: {
-    recsCountURL: {type: String},
     recsURL: {type: String},
     recAddURL: {type: String},
     recEditURL: {type: String},
@@ -340,7 +352,8 @@ export default {
     activeRow: {type: Boolean},
     addButton: {type: Boolean},
     tableColumns: {type: Array},
-    fieldsArray: {type: Array}
+    fieldsArray: {type: Array},
+    dataTableHeight: {type: Number},
   },
   data() {
     return {
@@ -365,30 +378,8 @@ export default {
     }
   },
   methods: {
-    async getRecsTotal() {
-      await fetch(this.$store.state.backendUrl+this.recsCountURL, {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Authorization': 'Token '+getCookie('iohk_token')
-        }
-      })
-          .then(resp => {
-            if (resp.status === 200) { return resp.json() } else { this.recsTotalCount = 0 }
-          })
-          .then(data => {
-            if (data.error) {
-              showMessage('error', data.error, false)
-              this.recsTotalCount = 0
-            } else {
-              this.recsTotalCount = data.count
-              this.pageTotal = Math.ceil(this.recsTotalCount/this.recCount)
-            }
-          })
-    },
     init() {
       this.setDefaultListFields()
-      this.getRecsTotal()
       setTimeout(() => {
         changeTableView()
         noHeadTable()
@@ -547,7 +538,6 @@ export default {
               showMessage('error', data['error'])
             } else {
               showMessage('success', data['success'])
-              this.getRecsTotal()
               this.getRecs((this.$data.pageNumber-1)*this.$data.recCount, this.$data.recCount)
             }
             this.tableBusy = false
@@ -646,7 +636,6 @@ export default {
                 showMessage('error', data['error'])
               } else {
                 showMessage('success', data['success'])
-                this.getRecsTotal()
                 this.getRecs((this.$data.pageNumber-1)*this.$data.recCount, this.$data.recCount)
               }
               this.tableBusy = false
@@ -696,6 +685,12 @@ export default {
 </script>
 
 <style scoped>
+
+#data_table {
+  width: 100%;
+  overflow: auto
+}
+
 .upper-table-container {
   display: flex;
   justify-content: space-between;

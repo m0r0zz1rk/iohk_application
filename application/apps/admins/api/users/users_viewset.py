@@ -2,9 +2,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
-from apps.admins.filters.guides.events_types_filter import EventsTypesFilter
+from apps.admins.filters.users.users_filter import UsersFilter
 from apps.admins.serializers.guides.events_types_serializer import EventsTypeSerializer, \
-    EventsTypesSaveSerializer, EventsTypePaginationSerializer
+    EventsTypesSaveSerializer
+from apps.admins.serializers.users.users_serializer import UsersSerializer, UsersPaginationSerializer
 from apps.commons.consts.journals.journal_event_results import SUCCESS, ERROR
 from apps.commons.consts.journals.journal_rec_types import ADMINS
 from apps.commons.pagination import CustomPagination
@@ -18,14 +19,14 @@ from apps.commons.utils.models.profile import ProfileUtils
 from apps.journals.writer.journal_writer import JournalWriter
 
 
-class EventsTypesViewSet(viewsets.ModelViewSet):
-    """API для работы с типами мероприятий"""
+class UsersViewSet(viewsets.ModelViewSet):
+    """API для работы с пользователями"""
     permission_classes = [IsAuth, IsAdministrators]
-    queryset = EventsTypesUtils.get_events_type()
-    serializer_class = EventsTypeSerializer
+    queryset = ProfileUtils.get_all_profiles()
+    serializer_class = UsersSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend,]
-    filterset_class = EventsTypesFilter
+    filterset_class = UsersFilter
 
     journal = JournalWriter(ADMINS)
     ru = ResponseUtils()
@@ -33,13 +34,13 @@ class EventsTypesViewSet(viewsets.ModelViewSet):
     pu = ProfileUtils()
 
     @swagger_auto_schema(
-        tags=['Типы мероприятий'],
-        operation_description="Получение типов мероприятий",
+        tags=['Администраторы_Пользователи'],
+        operation_description="Получение пользователей",
         responses={
-            '400': 'Ошибка при получении списка типов мероприятий: (текст ошибки)',
+            '400': 'Ошибка при получении списка пользователей: (текст ошибки)',
             '401': 'Пользователь не авторизован',
             '403': 'Доступ запрещен',
-            '200': EventsTypePaginationSerializer,
+            '200': UsersPaginationSerializer,
         }
     )
     def list(self, request, *args, **kwargs):
@@ -54,18 +55,18 @@ class EventsTypesViewSet(viewsets.ModelViewSet):
             self.journal.write(
                 self.pu.get_display_name('django_user_id', request.user.id),
                 SUCCESS,
-                'Просмотр типов мероприятий'
+                'Просмотр пользователей'
             )
             return self.ru.ok_response_dict(serializer.data)
         except Exception:
             self.journal.write(
                 'Система',
                 ERROR,
-                f'Ошибка при получении типов мероприятий: '
+                f'Ошибка при получении пользователей: '
                 f'{ExceptionHandling.get_traceback()}'
             )
             return self.ru.bad_request_response(
-                f'Ошибка при получении типов мероприятий'
+                f'Ошибка при получении пользователей'
             )
 
     @swagger_auto_schema(

@@ -11,6 +11,8 @@
           <ui5-tab text="Формы проведения" :selected="selectedTab === 'event_forms'" />
         </ui5-tabcontainer><br/><br/>
         <EventsTypes v-if="selectedTab === 'event_types'" />
+        <ParticipantCategories v-if="selectedTab === 'participant_categories'" />
+        <EventsForms v-if="selectedTab === 'event_forms'" />
       </ui5-card>
     </slot>
   </LkBase>
@@ -19,10 +21,12 @@
 <script>
 import LkBase from "../../components/LkBase.vue";
 import EventsTypes from "./guides/EventsTypes.vue";
+import ParticipantCategories from "./guides/ParticipantCategories.vue";
+import EventsForms from "./guides/EventsForms.vue";
 
 export default {
   name: 'Guides',
-  components: {EventsTypes, LkBase},
+  components: {EventsForms, ParticipantCategories, EventsTypes, LkBase},
   data() {
     return {
       selectedTab: 'event_types',

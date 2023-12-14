@@ -176,3 +176,8 @@ class ProfileUtils:
                 user.save()
             return True
         return False
+
+    @staticmethod
+    def get_all_profiles():
+        """Получение всех профилей пользователей"""
+        return Profiles.objects.all().order_by('surname', 'name', 'patronymic')

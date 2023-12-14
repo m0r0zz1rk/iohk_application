@@ -13,11 +13,6 @@ class EventsTypesUtils:
         return EventTypes.objects.all().order_by('name')
 
     @staticmethod
-    def get_events_types_count() -> int:
-        """Получение количества всех типов мероприятий"""
-        return EventTypes.objects.count()
-
-    @staticmethod
     def get_event_type_by_object_id(object_id: uuid) -> Optional[EventTypes]:
         """Получение типа мероприятия по полученному object_id"""
         try:

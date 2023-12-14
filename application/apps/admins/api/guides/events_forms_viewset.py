@@ -2,9 +2,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
-from apps.admins.filters.guides.events_types_filter import EventsTypesFilter
-from apps.admins.serializers.guides.events_types_serializer import EventsTypeSerializer, \
-    EventsTypesSaveSerializer, EventsTypePaginationSerializer
+from apps.admins.filters.guides.events_forms_filter import EventsFormsFilter
+from apps.admins.serializers.guides.events_forms_serializer import EventsFormSerializer, EventsFormPaginationSerializer, \
+    EventsFormSaveSerializer
 from apps.commons.consts.journals.journal_event_results import SUCCESS, ERROR
 from apps.commons.consts.journals.journal_rec_types import ADMINS
 from apps.commons.pagination import CustomPagination
@@ -13,19 +13,19 @@ from apps.commons.permissions.is_auth import IsAuth
 from apps.commons.utils.data_types.dict import DictUtils
 from apps.commons.utils.django.exception import ExceptionHandling
 from apps.commons.utils.django.response import ResponseUtils
-from apps.commons.utils.models.events_type import EventsTypesUtils
+from apps.commons.utils.models.events_form import EventsFormsUtils
 from apps.commons.utils.models.profile import ProfileUtils
 from apps.journals.writer.journal_writer import JournalWriter
 
 
-class EventsTypesViewSet(viewsets.ModelViewSet):
-    """API для работы с типами мероприятий"""
+class EventsFormsViewSet(viewsets.ModelViewSet):
+    """API для работы с формами проведения мероприятий"""
     permission_classes = [IsAuth, IsAdministrators]
-    queryset = EventsTypesUtils.get_events_type()
-    serializer_class = EventsTypeSerializer
+    queryset = EventsFormsUtils.get_events_forms()
+    serializer_class = EventsFormSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend,]
-    filterset_class = EventsTypesFilter
+    filterset_class = EventsFormsFilter
 
     journal = JournalWriter(ADMINS)
     ru = ResponseUtils()
@@ -33,17 +33,17 @@ class EventsTypesViewSet(viewsets.ModelViewSet):
     pu = ProfileUtils()
 
     @swagger_auto_schema(
-        tags=['Типы мероприятий'],
-        operation_description="Получение типов мероприятий",
+        tags=['Формы проведения мероприятий'],
+        operation_description="Получение форм проведения мероприятий",
         responses={
-            '400': 'Ошибка при получении списка типов мероприятий: (текст ошибки)',
+            '400': 'Ошибка при получении списка форм проведения мероприятий: (текст ошибки)',
             '401': 'Пользователь не авторизован',
             '403': 'Доступ запрещен',
-            '200': EventsTypePaginationSerializer,
+            '200': EventsFormPaginationSerializer,
         }
     )
     def list(self, request, *args, **kwargs):
-        """Получение типов мероприятий"""
+        """Получение форм проведения мероприятий"""
         try:
             queryset = self.filter_queryset(self.get_queryset())
             page = self.paginate_queryset(queryset)
@@ -54,85 +54,85 @@ class EventsTypesViewSet(viewsets.ModelViewSet):
             self.journal.write(
                 self.pu.get_display_name('django_user_id', request.user.id),
                 SUCCESS,
-                'Просмотр типов мероприятий'
+                'Просмотр форм проведения мероприятий'
             )
             return self.ru.ok_response_dict(serializer.data)
         except Exception:
             self.journal.write(
                 'Система',
                 ERROR,
-                f'Ошибка при получении типов мероприятий: '
+                f'Ошибка при получении форм проведения мероприятий: '
                 f'{ExceptionHandling.get_traceback()}'
             )
             return self.ru.bad_request_response(
-                f'Ошибка при получении типов мероприятий'
+                f'Ошибка при получении форм проведения мероприятий'
             )
 
     @swagger_auto_schema(
-        tags=['Типы мероприятий'],
-        request_body=EventsTypesSaveSerializer,
-        operation_description="Добавление типа мероприятия",
+        tags=['Формы проведения мероприятий'],
+        request_body=EventsFormSaveSerializer,
+        operation_description="Добавление формы проведения мероприятия",
         responses={
-            '400': 'Ошибка при добавлении типа мероприятий: (текст ошибки)',
+            '400': 'Ошибка при добавлении формы проведения мероприятий: (текст ошибки)',
             '401': 'Пользователь не авторизован',
             '403': 'Доступ запрещен',
-            '200': 'Тип мероприятия успешно добавлен'
+            '200': 'Форма проведения мероприятия успешно добавлена'
         }
     )
     def save(self, request, *args, **kwargs):
-        serialize = EventsTypeSerializer(data=request.data)
+        serialize = EventsFormSaveSerializer(data=request.data)
         if serialize.is_valid(raise_exception=True):
             serialize.save()
             self.journal.write(
                 self.pu.get_display_name('django_user_id', request.user.id),
                 SUCCESS,
-                f'Добавлен новый тип мероприятий: '
+                f'Добавлен новая форма проведения мероприятий: '
                 f'{self.du.get_str_value_in_dict_by_key(
                     'name',
                     request.data
                 )}'
             )
-            return self.ru.ok_response('Тип мероприятия успешно добавлен')
+            return self.ru.ok_response('Форма проведения мероприятия успешно добавлена')
         else:
             self.journal.write(
                 'Система',
                 ERROR,
-                f'Ошибка при добавлении типа мероприятия: {serialize.errors}'
+                f'Ошибка при добавлении форм проведения мероприятия: {serialize.errors}'
             )
             return self.ru.bad_request_response(serialize.errors)
 
     @swagger_auto_schema(
-        tags=['Типы мероприятий'],
-        request_body=EventsTypesSaveSerializer,
-        operation_description="Изменение типа мероприятия",
+        tags=['Формы проведения мероприятий'],
+        request_body=EventsFormSaveSerializer,
+        operation_description="Изменение формы проведения мероприятия",
         responses={
-            '400': 'Ошибка при изменении типа мероприятий: (текст ошибки)',
+            '400': 'Ошибка при изменении формы проведения мероприятий: (текст ошибки)',
             '401': 'Пользователь не авторизован',
             '403': 'Доступ запрещен',
-            '200': 'Тип мероприятия успешно изменен'
+            '200': 'Форма проведения успешно изменена'
         }
     )
     def edit(self, request, *args, **kwargs):
         try:
-            event_type = EventsTypesUtils.get_event_type_by_object_id(self.kwargs['object_id'])
-            serialize = EventsTypeSerializer(event_type, data=request.data, partial=True)
+            event_form = EventsFormsUtils.get_event_form_by_object_id(self.kwargs['object_id'])
+            serialize = EventsFormSerializer(event_form, data=request.data, partial=True)
             if serialize.is_valid(raise_exception=True):
                 serialize.save()
                 self.journal.write(
                     self.pu.get_display_name('django_user_id', request.user.id),
                     SUCCESS,
-                    f'Изменен тип мероприятий: '
+                    f'Изменена форма проведения мероприятий: '
                     f'{DictUtils().get_str_value_in_dict_by_key(
                         'name',
                         request.data
                     )}'
                 )
-                return self.ru.ok_response('Тип мероприятия успешно изменен')
+                return self.ru.ok_response('Форма проведения мероприятия успешно изменена')
             else:
                 self.journal.write(
                     'Система',
                     ERROR,
-                    f'Ошибка при изменении типа мероприятия: {serialize.errors}'
+                    f'Ошибка при изменении формы проведения мероприятия: {serialize.errors}'
                 )
                 return self.ru.bad_request_response(serialize.errors)
         except Exception:
@@ -140,34 +140,34 @@ class EventsTypesViewSet(viewsets.ModelViewSet):
             self.journal.write(
                 'Система',
                 ERROR,
-                f'Ошибка при изменении типа мероприятия: {error}'
+                f'Ошибка при изменении формы проведения мероприятия: {error}'
             )
             return self.ru.bad_request_response(error)
 
     @swagger_auto_schema(
-        tags=['Типы мероприятий'],
-        operation_description="Удаление типа мероприятия",
+        tags=['Формы проведения мероприятий'],
+        operation_description="Удаление формы проведения мероприятия",
         responses={
-            '400': 'Ошибка при удалении типа мероприятий: (текст ошибки)',
+            '400': 'Ошибка при удалении формы проведения мероприятий: (текст ошибки)',
             '401': 'Пользователь не авторизован',
             '403': 'Доступ запрещен',
-            '200': 'Тип мероприятия успешно удален'
+            '200': 'Форма проведения мероприятия успешно удалена'
         }
     )
     def delete(self, request, *args, **kwargs):
         try:
-            name = EventsTypesUtils.delete_event_type_by_object_id(self.kwargs['object_id'])
+            name = EventsFormsUtils.delete_event_form_by_object_id(self.kwargs['object_id'])
             self.journal.write(
                 self.pu.get_display_name('django_user_id', request.user.id),
                 SUCCESS,
-                f'Удален тип мероприятий: {name}'
+                f'Удалена форма проведения мероприятий: {name}'
             )
-            return self.ru.ok_response('Тип мероприятия успешно удален')
+            return self.ru.ok_response('Форма проведения мероприятия успешно удален')
         except Exception:
             error = ExceptionHandling.get_traceback()
             self.journal.write(
                 'Система',
                 ERROR,
-                f'Ошибка при удалении типа мероприятия: {error}'
+                f'Ошибка при удалении формы проведения мероприятия: {error}'
             )
             return self.ru.bad_request_response(error)

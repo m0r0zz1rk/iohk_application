@@ -1,7 +1,7 @@
-from django.core.validators import MinValueValidator
 from rest_framework import serializers
 
 from apps.admins.models.guides.event_types import EventTypes
+from apps.commons.pagination_serializer import PaginationSerializer
 
 
 class EventsTypeSerializer(serializers.ModelSerializer):
@@ -11,15 +11,13 @@ class EventsTypeSerializer(serializers.ModelSerializer):
         fields = ('object_id', 'name')
 
 
+class EventsTypePaginationSerializer(PaginationSerializer):
+    """Сериализация данных при пагинации типов мероприятий"""
+    results = EventsTypeSerializer(many=True)
+
+
 class EventsTypesSaveSerializer(serializers.ModelSerializer):
     """Сериализация данных при добавлении нового типа мероприятия"""
     class Meta:
         model = EventTypes
         fields = ('name',)
-
-
-class EventsTypesCountSerializer(serializers.Serializer):
-    """Сериализация количества типов мероприятий в АИС"""
-    count = serializers.IntegerField(
-        validators=[MinValueValidator(0),]
-    )

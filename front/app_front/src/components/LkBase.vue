@@ -16,22 +16,7 @@
       </ui5-list>
     </div>
   </ui5-popover>
-  <ui5-side-navigation id="side_nav" ref="sideNavigation" :collapsed="sideNavCollapsed">
-    <ui5-side-navigation-item text="Главная"
-                              icon="home"
-                              @click="navigate('main')" />
-    <ui5-side-navigation-item v-if="isAdmin"
-                              text="Справочники" icon="sap-box"
-                              @click="navigate('admin/guides')" />
-    <ui5-side-navigation-item v-if="isAdmin"
-                              text="Пользователи" icon="company-view"
-                              @click="navigate('users')" />
-    <ui5-side-navigation-item text="Мероприятия" icon="activity-items"
-                              @click="navigate('events')" />
-    <ui5-side-navigation-item v-if="isAdmin"
-                              text="Управление мероприятиями" icon="action-settings"
-                              @click="navigate('events')" />
-  </ui5-side-navigation>
+  <SideNavigation v-bind:sideNavCollapsed="sideNavCollapsed" />
   <div class="base-div"></div>
   <div v-show="contentShow" class="content-div">
     <slot></slot>
@@ -44,9 +29,11 @@
 import LkLoader from '../components/LkLoader.vue'
 import PreLoader from '../App.vue'
 import store from "../modules/store/index.js";
+import SideNavigation from "./SideNavigation.vue";
 export default {
   name: 'Base',
   components: {
+    SideNavigation,
     LkLoader,
     PreLoader
   },
@@ -81,9 +68,6 @@ export default {
     useLoader() {
       this.contentShow = !(this.contentShow)
       this.$refs.lkLoader.useLoader()
-    },
-    navigate(name_component) {
-      this.$router.push('/'+name_component)
     },
     goToProfile() {
       this.$router.push('/profile')
