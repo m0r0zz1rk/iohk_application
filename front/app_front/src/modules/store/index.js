@@ -35,7 +35,6 @@ export default createStore({
         AUTH_REQUEST ({commit, dispatch}, user ) {
             return new Promise((resolve, reject) => { // The Promise used for router redirect in login
                 commit('AUTH_REQUEST');
-                console.log('YES')
                 fetch(this.state.backendUrl+'/api/v1/auth/login/', {
                     method: 'POST',
                     headers: {

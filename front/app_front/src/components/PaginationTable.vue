@@ -49,7 +49,9 @@
       </div>
     </div>
     <div id="data_table"  :style="{height: dataTableHeight + 'vh'}">
-      <ui5-table :busy="tableBusy" sticky-column-header>
+      <ui5-table :busy="tableBusy"
+                 :mode="tableMode"
+                 sticky-column-header>
         <ui5-table-column slot="columns">№</ui5-table-column>
         <template v-for="col in tableColumns">
           <ui5-table-column v-if="fieldsList.includes(col.alias)"
@@ -71,14 +73,34 @@
           <template v-for="obj in fieldsArray">
             <template v-if="obj.ui !== 'icon'">
               <ui5-table-cell v-if="fieldsList.includes(obj.field)"
+                              style="white-space: nowrap"
                               class="find-row-cell">
                 <p v-if="['None', 'password', 'checkbox', 'app_status'].includes(obj.ui)">-</p>
                 <p v-if="obj.ui === 'today'">{{componentGetDay(false)}}</p>
-                <ui5-input v-if="obj.ui === 'input'"
-                           :type="obj.type"
-                           @change="e => filterRecs(e.target.value, obj.field)" />
-                <ui5-switch v-if="obj.ui === 'switch'"
-                            @change="e => filterRecs(e.target._state.checked, obj.field)"/>
+                <template v-if="obj.ui === 'input'">
+                  <PhoneField v-if="obj.type === 'Phone'"
+                              ref="filter_phone"
+                              v-bind:phoneValueState="'None'"
+                              v-bind:phoneStateText="''"
+                              v-bind:changePhoneAction="filterPhone" />
+                  <ui5-input v-if="obj.type !== 'Phone'"
+                             :type="obj.type"
+                             @change="e => filterRecs(e.target.value, obj.field)" />
+                </template>
+                <template v-if="obj.ui === 'switch'">
+                  <div>
+                    <div style="display: inline-block">
+                      <ui5-switch :text-on="obj.field === 'sex' && 'М'"
+                                  :text-off="obj.field === 'sex' && 'Ж'"
+                                  @change="e => filterRecs(e.target._state.checked, obj.field)"/>
+                    </div>
+                    <div style="display: inline-block">
+                      <ui5-icon interactive
+                                name="clear-filter"
+                                @click="e => filterRecs('', obj.field)" />
+                    </div>
+                  </div>
+                </template>
                 <ui5-select v-if="['select', 'multiple'].includes(obj.ui)"
                             @change="e => filterRecs(e.detail.selectedOption.innerText, obj.field)">
                   <ui5-option v-for="option in obj.options">
@@ -118,11 +140,14 @@
                 </ui5-input>
                 <ui5-switch v-if="obj.ui === 'switch'" :ref="'add_'+obj.field" />
                 <ui5-select v-if="obj.ui === 'select'"
+                            :ref="'add_'+obj.field"
                             :value-state="obj.add_required && 'Warning'"
                             :show-suggestions="obj.add_required">
-                  <ui5-option v-for="option in obj.options">
-                    {{option.name}}
-                  </ui5-option>
+                  <template v-for="option in obj.options">
+                    <ui5-option  v-if="option.name.length > 0">
+                      {{option.name}}
+                    </ui5-option>
+                  </template>
                   <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
                 </ui5-select>
                 <ui5-multi-combobox v-if="obj.ui === 'multiple'"
@@ -168,9 +193,8 @@
         </ui5-table-row>
         <template v-for="(row, id) in recs">
           <ui5-table-row v-if="editRow !== row.object_id"
-                         :navigated="activeRow"
                          :type="activeRow"
-                         @click="activeRow && activeRowEvent(row.object_id)">
+                         @click="activeRowEvent && activeRowEvent(row)">
             <ui5-table-cell style="white-space: nowrap">
               <p v-if="!(tableBusy)">{{(id+1) + (recCount*(pageNumber-1))}}</p>
             </ui5-table-cell>
@@ -208,7 +232,11 @@
                     <template v-if="field.alias !== 'checkbox'">
                       <div v-if="row[field.alias] === null">-</div>
                       <template v-if="row[field.alias] !== null">
-                        {{row[field.alias]}}
+                        <JournalEventResultBadge v-if="field.alias === 'event_result'"
+                                                 v-bind:result="row[field.alias]" />
+                        <div v-if="field.alias !== 'event_result'">
+                          {{row[field.alias]}}
+                        </div>
                       </template>
                     </template>
                   </div>
@@ -336,12 +364,15 @@
 
 <script>
 import PasswordField from "./PasswordField.vue";
-import SexBadge from "./SexBadge.vue";
+import SexBadge from "./badges/SexBadge.vue";
+import PhoneField from "./PhoneField.vue";
+import JournalEventResultBadge from "./badges/JournalEventResultBadge.vue";
 
 export default {
   name: 'PaginationTable',
-  components: {SexBadge, PasswordField},
+  components: {JournalEventResultBadge, PhoneField, SexBadge, PasswordField},
   props: {
+    tableMode: {type: String},
     recsURL: {type: String},
     recAddURL: {type: String},
     recEditURL: {type: String},
@@ -349,7 +380,8 @@ export default {
     searchRow: {type: Boolean},
     changeShowFields: {type: Boolean},
     colCount: {type: Number},
-    activeRow: {type: Boolean},
+    activeRow: {type: String},
+    activeRowEvent: {type: Function},
     addButton: {type: Boolean},
     tableColumns: {type: Array},
     fieldsArray: {type: Array},
@@ -358,6 +390,7 @@ export default {
   data() {
     return {
       recs: [],
+      states: [],
       filterString: '',
       additionalData: {},
       tableBusy: true,
@@ -367,8 +400,6 @@ export default {
       recsTotalCount: 0,
       pageNumber: 1,
       pageTotal: 1,
-      activeRow: false,
-      activeRowEvent: null,
       checkBoxRecs: [],
       recCount: this.$store.state.recCountOptions.split(',')[0],
       recCountOptions: this.$store.state.recCountOptions.split(','),
@@ -431,6 +462,11 @@ export default {
             if (resp.status === 200) {
               return resp.json()
             } else {
+              if (resp.status === 401) {
+                showMessage('error', 'Пожалуйста, войдите в систему', false)
+                this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
+                return false
+              }
               this.recs = []
               this.tableBusy = false
             }
@@ -446,6 +482,9 @@ export default {
             }
             this.tableBusy = false
           })
+    },
+    filterPhone() {
+      this.filterRecs(this.$refs.filter_phone[0].componentPhoneField, 'phone')
     },
     filterRecs(value, field) {
       let filters = this.filterString
@@ -482,6 +521,7 @@ export default {
       let add_required = false
       this.fieldsArray.map((column) => {
         if (!(['object_id', 'actions'].includes(column.field))) {
+          console.log(this.$refs['add_'+column.field])
           switch(column.ui) {
             case 'input':
             case 'date_picker':
@@ -525,10 +565,15 @@ export default {
         },
         body: JSON.stringify(data)
       })
-          .then(response => {
-            if (response.status === 200) {
-              return response.json()
+          .then(resp => {
+            if (resp.status === 200) {
+              return resp.json()
             } else {
+              if (resp.status === 401) {
+                showMessage('error', 'Пожалуйста, войдите в систему', false)
+                this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
+                return false
+              }
               showMessage('error', 'Произошла ошибка, повторите попытку позже')
               this.tableBusy = false
             }
@@ -538,7 +583,7 @@ export default {
               showMessage('error', data['error'])
             } else {
               showMessage('success', data['success'])
-              this.getRecs((this.$data.pageNumber-1)*this.$data.recCount, this.$data.recCount)
+              this.getRecs((this.pageNumber-1)*this.recCount, this.recCount)
             }
             this.tableBusy = false
           })
@@ -593,10 +638,15 @@ export default {
         },
         body: JSON.stringify(data)
       })
-          .then(response => {
-            if (response.status === 200) {
-              return response.json()
+          .then(resp => {
+            if (resp.status === 200) {
+              return resp.json()
             } else {
+              if (resp.status === 401) {
+                showMessage('error', 'Пожалуйста, войдите в систему', false)
+                this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
+                return false
+              }
               showMessage('error', 'Произошла ошибка, повторите попытку позже')
               this.tableBusy = false
             }
@@ -606,7 +656,7 @@ export default {
               showMessage('error', data['error'])
             } else {
               showMessage('success', data['success'])
-              this.getRecs((this.$data.pageNumber-1)*this.$data.recCount, this.$data.recCount)
+              this.getRecs((this.pageNumber-1)*this.recCount, this.recCount)
 
             }
             this.tableBusy = false
@@ -623,10 +673,15 @@ export default {
             'Authorization': 'Token '+getCookie('iohk_token')
           },
         })
-            .then(response => {
-              if (response.status === 200) {
-                return response.json()
+            .then(resp => {
+              if (resp.status === 200) {
+                return resp.json()
               } else {
+                if (resp.status === 401) {
+                  showMessage('error', 'Пожалуйста, войдите в систему', false)
+                  this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
+                  return false
+                }
                 showMessage('error', 'Произошла ошибка, повторите попытку позже')
                 this.tableBusy = false
               }
@@ -636,7 +691,7 @@ export default {
                 showMessage('error', data['error'])
               } else {
                 showMessage('success', data['success'])
-                this.getRecs((this.$data.pageNumber-1)*this.$data.recCount, this.$data.recCount)
+                this.getRecs((this.pageNumber-1)*this.recCount, this.recCount)
               }
               this.tableBusy = false
             })
@@ -647,13 +702,13 @@ export default {
       if (this.tableColumns.filter((field) => field.alias === 'password').length > 0) {
         this.$refs.edit_password.passwordStr = row.password
       }
-    }
+    },
   },
   watch: {
     pageNumber: function() {
-      if (this.$data.pageNumber !== 0) {
+      if (this.pageNumber !== 0) {
         this.tableBusy = true
-        this.getRecs((this.$data.pageNumber-1)*this.$data.recCount, this.$data.recCount)
+        this.getRecs((this.pageNumber-1)*this.recCount, this.recCount)
       }
     },
     fieldsList: function() {
@@ -661,20 +716,20 @@ export default {
     },
     recCount: function() {
       this.pageTotal = Math.ceil(this.recsTotalCount/this.recCount)
-      if (this.$data.pageNumber === 1) {
+      if (this.pageNumber === 1) {
         this.tableBusy = true
-        this.getRecs((this.$data.pageNumber-1)*this.$data.recCount, this.$data.recCount)
+        this.getRecs((this.pageNumber-1)*this.recCount, this.recCount)
       } else {
-        this.$data.pageNumber = 1
+        this.pageNumber = 1
       }
     },
     filterString: function() {
       this.pageTotal = Math.ceil(this.recsTotalCount/this.recCount)
-      if (this.$data.pageNumber === 1) {
+      if (this.pageNumber === 1) {
         this.tableBusy = true
-        this.getRecs((this.$data.pageNumber-1)*this.$data.recCount, this.$data.recCount)
+        this.getRecs((this.pageNumber-1)*this.recCount, this.recCount)
       } else {
-        this.$data.pageNumber = 1
+        this.pageNumber = 1
       }
     },
   },

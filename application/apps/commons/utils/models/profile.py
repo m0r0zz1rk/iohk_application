@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from typing import Optional
 
 from django.contrib.auth.models import User, Group
@@ -24,8 +25,8 @@ class ProfileUtils:
             return User.objects.filter(id=value).exists()
         elif field == 'django_user_id':
             return Profiles.objects.filter(django_user_id=value).exists()
-        elif field == 'profile_id':
-            return Profiles.objects.filter(object_uuid=value).exists()
+        elif field in ['object_id', 'profile_id']:
+            return Profiles.objects.filter(object_id=value).exists()
         else:
             return None
 
@@ -43,9 +44,9 @@ class ProfileUtils:
                     input_field: input_value
                 }
                 filter_kwargs = {
-                    'django_user_id': User.objects.get(**user_filter_kwargs)
+                    'django_user_id': User.objects.get(**user_filter_kwargs).id
                 }
-            elif input_field in ['phone', 'django_user_id']:
+            elif input_field in ['phone', 'django_user_id', 'object_id']:
                 filter_kwargs = {
                     input_field: input_value
                 }
@@ -107,6 +108,14 @@ class ProfileUtils:
         """Получение профиля пользователя на основе полученного uuid пользователя Django"""
         if Profiles.objects.filter(django_user_id=django_user_id).exists():
             return Profiles.objects.get(django_user_id=django_user_id)
+        else:
+            return None
+
+    @staticmethod
+    def get_profile_by_object_id(profile_id: uuid) -> Optional[Profiles]:
+        """Получение профиля пользователя на основе полученного object_id"""
+        if Profiles.objects.filter(object_id=profile_id).exists():
+            return Profiles.objects.get(object_id=profile_id)
         else:
             return None
 

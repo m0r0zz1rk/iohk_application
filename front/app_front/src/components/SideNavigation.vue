@@ -66,6 +66,13 @@ export default {
             },
           ]
         },
+        {
+          text: 'Журнал',
+          only_admin: true,
+          icon: 'time-account',
+          mainMenu: 'journal',
+          next: '/journal'
+        }
       ]
     }
   },

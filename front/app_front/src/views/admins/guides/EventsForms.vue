@@ -26,14 +26,14 @@ export default {
   data() {
     return {
       dataTableHeight: 60,
-      recsURL: '/api/v1/admins/events_forms',
+      recsURL: '/api/v1/admins/events_forms/',
       recAddURL: '/api/v1/admins/events_form_new/',
       recEditURL: '/api/v1/admins/events_form_edit/',
       recDeleteURL: '/api/v1/admins/events_form_delete/',
       searchRow: true,
       changeShowFields: true,
       colCount: 4,
-      activeRow: false,
+      activeRow: 'Inactive',
       addButton: true,
       tableColumns: [
         {name: 'ID объекта', alias: 'object_id', whiteSpace: 'nowrap'},

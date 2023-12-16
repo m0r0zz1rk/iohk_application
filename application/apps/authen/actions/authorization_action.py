@@ -79,7 +79,7 @@ class AuthorizationAction:
                 login(self.request, user)
                 auth_data = TokenUtils(user.id).jwt_token()
                 self.journal.write(
-                    f'Пользователь "{pu.get_display_name('django_user_id', user.id)}"',
+                    f'{pu.get_display_name('django_user_id', user.id)}',
                     SUCCESS,
                     'Пользователь успешно авторизовался'
                 )

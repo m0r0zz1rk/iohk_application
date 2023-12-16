@@ -42,13 +42,9 @@
               </td>
               <td>
                 <ui5-input v-if="!(phoneLogin)" type="Email" id="login_username" ref="login_username" required />
-                <ui5-input v-if="phoneLogin" type="Text" id="reg_phone" ref="reg_phone" v-model="loginPhoneField"
-                           :value-state="loginPhoneValueState" maxlength="18"
-                           @input = "e => checkPhoneLength('login')"
-                           @change="e => checkPhoneUnique()">
-                  <div slot="valueStateMessage">{{ loginPhoneStateText }}</div>
-                </ui5-input>
-                <input v-if="phoneLogin" v-model="loginPhoneField" v-mask="'+7 (###) ###-##-##'" hidden>
+                <PhoneField v-if="phoneLogin" ref="login_phone"
+                            v-bind:phoneValueState="loginPhoneValueState"
+                            v-bind:phoneStateText="loginPhoneStateText" />
               </td>
             </tr>
             <tr>
@@ -137,13 +133,10 @@
               <ui5-label for="reg_phone" required show-colon>Телефон</ui5-label>
             </td>
             <td>
-              <ui5-input type="Text" id="reg_phone" ref="reg_phone" v-model="regPhoneField"
-                         :value-state="regPhoneValueState" maxlength="18"
-                         @input = "e => checkPhoneLength('registration')"
-                         @change="e => checkPhoneUnique()" required>
-                <div slot="valueStateMessage">{{ regPhoneStateText }}</div>
-              </ui5-input>
-              <input v-model="regPhoneField" v-mask="'+7 (###) ###-##-##'" hidden>
+              <PhoneField ref="reg_phone"
+                          v-bind:phoneValueState="regPhoneValueState"
+                          v-bind:phoneStateText="regPhoneStateText"
+                          v-bind:changePhoneAction="checkPhoneUnique" />
             </td>
           </tr>
           <tr>
@@ -162,7 +155,7 @@
               <ui5-label for="reg_oo_fullname" required show-colon>Полное наименование ОО</ui5-label>
             </td>
             <td>
-              <ui5-textarea id="reg_oo_fullname" ref="reg_oo_fullname" rows="10"></ui5-textarea>
+              <ui5-textarea id="reg_oo_fullname" ref="reg_oo_fullname" rows="10" required></ui5-textarea>
             </td>
           </tr>
           <tr v-if="this.selectedRole === 'Преподаватели'">
@@ -170,7 +163,7 @@
               <ui5-label for="reg_oo_shortname" required show-colon>Краткое наименование ОО</ui5-label>
             </td>
             <td>
-              <ui5-textarea id="reg_oo_shortname" ref="reg_oo_shortname" rows="10"></ui5-textarea>
+              <ui5-textarea id="reg_oo_shortname" ref="reg_oo_shortname" rows="10" required></ui5-textarea>
             </td>
           </tr>
           <tr>
@@ -237,6 +230,11 @@
         </table>
       </div>
       <div slot="footer" style="display: flex; justify-content: flex-end; width: 100%; align-items: center">
+        <div v-if="profileChangeError.length > 0" >
+          <ui5-message-strip design="Negative" hide-close-button>
+            {{profileChangeError}}
+          </ui5-message-strip>
+        </div>&nbsp;
         <ui5-button v-if="dialogTitle === 'Вход в систему'" design="Emphasized" submits>Войти</ui5-button>
         <ui5-button v-if="dialogTitle === 'Регистрация'"
                     design="Emphasized"
@@ -251,15 +249,18 @@
 <script>
 import PreLoader from '../App.vue'
 import PasswordField from '../components/PasswordField.vue'
+import PhoneField from "../components/PhoneField.vue";
 
 export default {
   name: 'Login',
   components: {
+    PhoneField,
     PreLoader,
     PasswordField
   },
   data() {
     return {
+      profileChangeError: '',
       phoneLogin: true,
       regPhoneField: '',
       loginPhoneField: '',
@@ -321,7 +322,7 @@ export default {
           'patronymic': this.$refs.reg_patronymic.value,
           'sex': this.$refs.reg_sex._state.checked,
           'birthday': this.$refs.reg_birthday.value,
-          'phone': this.$refs.reg_phone.value,
+          'phone': this.$refs.reg_phone.componentPhoneField,
           'email': this.$refs.reg_email.value,
           'role': this.$refs.reg_role.selectedOption.innerText,
           'oo_fullname': '',
@@ -343,18 +344,22 @@ export default {
             .then(resp => resp.json())
             .then(data => {
               if (data.error) {
-                showMessage('error', data.error, false)
+                this.profileChangeError = data.error
+                this.$refs.dialog.show()
               } else {
                 showMessage('success', data.success, false)
               }
               preloader.usePreloader()
             })
-      } else if (this.dialogTitle === 'Вход в систему') {
+      }
+      else if (this.dialogTitle === 'Вход в систему') {
         preloader.usePreloader()
         this.$refs.dialog.close()
-        let username = this.loginPhoneField
+        let username = ''
         let password = this.$refs.login_password.passwordStr
-        if (!(this.phoneLogin)) {
+        if (this.phoneLogin) {
+          username = this.$refs.login_phone.componentPhoneField
+        } else {
           username = this.$refs.login_username.value
         }
         this.$store.dispatch('AUTH_REQUEST', { username, password}).then(() => {
@@ -365,6 +370,8 @@ export default {
           }
         })
             .catch((error) => {
+              this.profileChangeError = error
+              this.$refs.dialog.show()
               preloader.usePreloader()
             })
       } else {
@@ -374,19 +381,8 @@ export default {
     changeAuthType(type) {
       this.phoneLogin = type === 'phone';
     },
-    checkPhoneLength(type) {
-      if (type === 'login') {
-        if (this.loginPhoneField.length > 18) {
-          this.loginPhoneField = this.loginPhoneField.substring(0, 17)
-        }
-      } else {
-        if (this.regPhoneField.length > 18) {
-          this.regPhoneField = this.regPhoneField.substring(0, 17)
-        }
-      }
-    },
     async checkPhoneUnique() {
-      if (this.regPhoneField.length !== 18) {
+      if (this.$refs.reg_phone.componentPhoneField.length !== 18) {
         this.regPhoneValueState = 'Error'
         this.regPhoneStateText = 'Некорректный номер телефона'
         return false
@@ -398,7 +394,7 @@ export default {
           'Content-Type': 'web_app/json'
         },
         body: JSON.stringify({
-          'phone': this.regPhoneField
+          'phone': this.$refs.reg_phone.componentPhoneField
         })
       })
           .then(resp => {
@@ -435,6 +431,11 @@ export default {
     },
     checkPasswords() {
       if ((this.$refs.reg_password_1.passwordStr.length > 0) && (this.$refs.reg_password_2.passwordStr.length > 0)) {
+        if (this.$refs.reg_password_1.passwordStr.length < 8) {
+          this.$refs.reg_password_1.valueState = 'Error'
+          this.$refs.reg_password_1.valueStateText = 'Минимальная длина пароля - 8 символов'
+          return false
+        }
         if (this.$refs.reg_password_1.passwordStr !== this.$refs.reg_password_2.passwordStr) {
           this.$refs.reg_password_1.valueState = 'Error'
           this.$refs.reg_password_2.valueState = 'Error'

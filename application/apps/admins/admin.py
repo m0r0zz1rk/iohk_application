@@ -11,4 +11,12 @@ class EventTypesAdmin(admin.ModelAdmin):
 
 @admin.register(ParticipantCategories)
 class ParticipantCategoriesAdmin(admin.ModelAdmin):
-    list_display = ('object_id', 'name')
+
+    def user_role(self, obj):
+        if obj.group is None:
+            return '-'
+        return obj.group.name
+
+    user_role.short_description = 'Роль пользователей'
+
+    list_display = ('object_id', 'name', 'user_role')

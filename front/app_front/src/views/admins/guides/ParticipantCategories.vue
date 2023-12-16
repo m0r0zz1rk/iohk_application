@@ -26,18 +26,19 @@ export default {
   data() {
     return {
       dataTableHeight: 60,
-      recsURL: '/api/v1/admins/participant_categories',
+      recsURL: '/api/v1/admins/participant_categories/',
       recAddURL: '/api/v1/admins/participant_category_new/',
       recEditURL: '/api/v1/admins/participant_category_edit/',
       recDeleteURL: '/api/v1/admins/participant_category_delete/',
       searchRow: true,
       changeShowFields: true,
       colCount: 4,
-      activeRow: false,
+      activeRow: 'Inactive',
       addButton: true,
       tableColumns: [
         {name: 'ID объекта', alias: 'object_id', whiteSpace: 'nowrap'},
         {name: 'Наименование', alias: 'name', whiteSpace: 'nowrap'},
+        {name: 'Роль пользователей', alias: 'group', whiteSpace: 'nowrap'},
         {name: 'Действия', alias: 'actions'}
       ],
       fieldsArray: [
@@ -49,6 +50,25 @@ export default {
           ui: 'input',
           type: 'Text',
           field: 'name',
+          add_required: true
+        },
+        {
+          ui: 'select',
+          options: [
+            {
+              id: 0,
+              name: ''
+            },
+            {
+              id: 1,
+              name: 'Преподаватели',
+            },
+            {
+              id: 2,
+              name: 'Участники'
+            }
+          ],
+          field: 'group',
           add_required: true
         },
         {

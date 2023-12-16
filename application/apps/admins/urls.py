@@ -3,7 +3,8 @@ from django.urls import path
 from apps.admins.api.guides.events_forms_viewset import EventsFormsViewSet
 from apps.admins.api.guides.events_types_viewset import EventsTypesViewSet
 from apps.admins.api.guides.participant_categories_viewset import ParticipantCategoriesViewSet
-from apps.admins.api.users.users_viewset import UsersViewSet
+from apps.admins.api.journal_viewset import JournalViewSet
+from apps.admins.api.users_viewset import UsersViewSet
 
 guides_urlpatterns = [
     path('events_types/', EventsTypesViewSet.as_view({'get': 'list'})),
@@ -24,6 +25,14 @@ guides_urlpatterns = [
 
 users_urlpatterns = [
     path('users/', UsersViewSet.as_view({'get': 'list'})),
+    path('user_check_email/', UsersViewSet.as_view({'post': 'check_change_email'})),
+    path('user_check_phone/', UsersViewSet.as_view({'post': 'check_change_phone'})),
+    path('user_edit/', UsersViewSet.as_view({'post': 'edit'})),
+    path('user_change_password/', UsersViewSet.as_view({'post': 'change_user_password'})),
 ]
 
-urlpatterns = guides_urlpatterns + users_urlpatterns
+journal_urlpatterns = [
+    path('journal/', JournalViewSet.as_view({'get': 'list'}))
+]
+
+urlpatterns = guides_urlpatterns + users_urlpatterns + journal_urlpatterns

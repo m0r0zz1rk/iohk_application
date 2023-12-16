@@ -6,9 +6,18 @@ from apps.commons.pagination_serializer import PaginationSerializer
 
 class ParticipantCategoriesSerializer(serializers.ModelSerializer):
     """Сериализация модели категорий участников"""
+    group = serializers.SerializerMethodField(
+        label='Роль пользователей'
+    )
+
+    def get_group(self, obj):
+        if obj.group is None:
+            return '-'
+        return obj.group.name
+
     class Meta:
         model = ParticipantCategories
-        fields = ('object_id', 'name')
+        fields = ('object_id', 'name', 'group')
 
 
 class ParticipantCategoriesPaginationSerializer(PaginationSerializer):
@@ -18,6 +27,7 @@ class ParticipantCategoriesPaginationSerializer(PaginationSerializer):
 
 class ParticipantCategoriesSaveSerializer(serializers.ModelSerializer):
     """Сериализация данных при добавлении новой категории участников"""
+
     class Meta:
         model = ParticipantCategories
-        fields = ('name',)
+        fields = ('name', 'group')

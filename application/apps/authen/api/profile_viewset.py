@@ -203,7 +203,7 @@ class ProfileViewSet(viewsets.ViewSet):
         request_body=ProfileChangePasswordSerializer,
         responses={
             '400': 'Ошибка при попытке смены пароля',
-            '403': 'Пользователь не авторизован',
+            '401': 'Пользователь не авторизован',
             '200': 'Пароль успешно изменен'
         }
     )

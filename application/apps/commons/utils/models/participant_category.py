@@ -1,6 +1,8 @@
 import uuid
 from typing import Optional
 
+from django.contrib.auth.models import Group
+
 from apps.admins.models.guides.participant_categories import ParticipantCategories
 
 
@@ -30,3 +32,10 @@ class ParticipantCategoryUtils:
             return name
         except Exception:
             return None
+
+    @staticmethod
+    def get_group_id_by_name(name: str) -> Optional[int]:
+        """Получение ID группы Django по полученному имени"""
+        if Group.objects.filter(name=name).exists():
+            return Group.objects.get(name=name).id
+        return None

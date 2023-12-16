@@ -34,10 +34,15 @@ class RegistrationUniquePhoneSerializer(serializers.Serializer):
     """Сериализация номера телефона"""
     phone = serializers.CharField(
         min_length=18,
-        max_length=18
+        max_length=18,
+        label='Телефон'
     )
 
 
 class RegistrationUniqueEmailSerializer(serializers.Serializer):
     """Сериализация email"""
-    email = serializers.EmailField()
+    email = serializers.EmailField(
+        allow_null=False,
+        allow_blank=False,
+        label='Email'
+    )

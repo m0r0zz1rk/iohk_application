@@ -80,26 +80,39 @@ class ParticipantCategoriesViewSet(viewsets.ModelViewSet):
         }
     )
     def save(self, request, *args, **kwargs):
-        serialize = ParticipantCategoriesSaveSerializer(data=request.data)
-        if serialize.is_valid(raise_exception=True):
-            serialize.save()
-            self.journal.write(
-                self.pu.get_display_name('django_user_id', request.user.id),
-                SUCCESS,
-                f'Добавлена новая категория участников: '
-                f'{self.du.get_str_value_in_dict_by_key(
-                    'name',
-                    request.data
-                )}'
-            )
-            return self.ru.ok_response('Категория участников успешно добавлена')
-        else:
+        try:
+            data = {
+                'name': request.data['name'],
+                'group': ParticipantCategoryUtils.get_group_id_by_name(request.data['group'])
+            }
+            serialize = ParticipantCategoriesSaveSerializer(data=data)
+            if serialize.is_valid(raise_exception=True):
+                serialize.save()
+                self.journal.write(
+                    self.pu.get_display_name('django_user_id', request.user.id),
+                    SUCCESS,
+                    f'Добавлена новая категория участников: '
+                    f'{self.du.get_str_value_in_dict_by_key(
+                        'name',
+                        request.data
+                    )}'
+                )
+                return self.ru.ok_response('Категория участников успешно добавлена')
+            else:
+                self.journal.write(
+                    'Система',
+                    ERROR,
+                    f'Ошибка при добавлении категории участников: {serialize.errors}'
+                )
+                return self.ru.bad_request_response(serialize.errors)
+        except Exception:
             self.journal.write(
                 'Система',
                 ERROR,
-                f'Ошибка при добавлении категории участников: {serialize.errors}'
+                f'Ошибка при добавлении категории участников: '
+                f'{ExceptionHandling.get_traceback()}'
             )
-            return self.ru.bad_request_response(serialize.errors)
+            return self.ru.sorry_try_again_response()
 
     @swagger_auto_schema(
         tags=['Категории участников'],
@@ -115,7 +128,12 @@ class ParticipantCategoriesViewSet(viewsets.ModelViewSet):
     def edit(self, request, *args, **kwargs):
         try:
             part_cat = ParticipantCategoryUtils.get_participant_category_by_object_id(self.kwargs['object_id'])
-            serialize = ParticipantCategoriesSerializer(part_cat, data=request.data, partial=True)
+            data = {
+                'name': request.data['name'],
+                'group': ParticipantCategoryUtils.get_group_id_by_name(request.data['group'])
+            }
+            print(data)
+            serialize = ParticipantCategoriesSaveSerializer(part_cat, data=data, partial=True)
             if serialize.is_valid(raise_exception=True):
                 serialize.save()
                 self.journal.write(

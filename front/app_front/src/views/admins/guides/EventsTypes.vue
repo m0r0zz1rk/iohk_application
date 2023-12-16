@@ -26,14 +26,14 @@
     data() {
       return {
         dataTableHeight: 60,
-        recsURL: '/api/v1/admins/events_types',
+        recsURL: '/api/v1/admins/events_types/',
         recAddURL: '/api/v1/admins/events_type_new/',
         recEditURL: '/api/v1/admins/events_type_edit/',
         recDeleteURL: '/api/v1/admins/events_type_delete/',
         searchRow: true,
         changeShowFields: true,
         colCount: 4,
-        activeRow: false,
+        activeRow: 'Inactive',
         addButton: true,
         tableColumns: [
           {name: 'ID объекта', alias: 'object_id', whiteSpace: 'nowrap'},
