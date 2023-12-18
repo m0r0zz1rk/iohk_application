@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from apps.admins.models.guides.event_forms import EventForms
+from apps.events.models.event_forms import EventForms
 
 
 class EventsFormsUtils:

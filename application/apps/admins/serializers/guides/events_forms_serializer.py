@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.admins.models.guides.event_forms import EventForms
-from apps.commons.pagination_serializer import PaginationSerializer
+from apps.events.models.event_forms import EventForms
+from apps.commons.serializers.pagination_serializer import PaginationSerializer
 
 
 class EventsFormSerializer(serializers.ModelSerializer):

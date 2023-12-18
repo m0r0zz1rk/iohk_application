@@ -51,3 +51,30 @@ class DateUtils:
                 return datetime.datetime.strptime(obj, '%d.%m.%Y')
             except BaseException:
                 return None
+
+    @staticmethod
+    def split_date_range(date_range: str) -> Optional[list]:
+        """Разделить значение из компонента ui5-daterange-picker на две даты"""
+        dates = date_range.split(' - ')
+        if len(dates) != 2:
+            return None
+        try:
+            date_start = datetime.datetime.strptime(
+                dates[0],
+                '%d.%m.%Y'
+            )
+            date_end = datetime.datetime.strptime(
+                dates[1],
+                '%d.%m.%Y'
+            )
+            return [date_start, date_end]
+        except Exception:
+            return None
+
+    def check_cross_and_second_after_first_date_ranges(self, first_dr: str, second_dr: str) -> bool:
+        """Проверка на пересечение временных интервалов и их последовательность"""
+        first_dr_dates = self.split_date_range(first_dr)
+        second_dr_dates = self.split_date_range(second_dr)
+        if first_dr_dates[0] >= second_dr_dates[0] or first_dr_dates[1] >= second_dr_dates[0]:
+            return True
+        return False

@@ -8,7 +8,7 @@ from apps.authen.serializers.registration_serializer import RegistrationUniquePh
     RegistrationUniqueEmailSerializer
 from apps.commons.consts.journals.journal_event_results import SUCCESS, ERROR, INFO
 from apps.commons.utils.django.exception import ExceptionHandling
-from apps.commons.utils.models.profile import ProfileUtils
+from apps.authen.utils.profile import ProfileUtils
 from apps.commons.utils.django.response import ResponseUtils
 from apps.commons.utils.django.rest import RestUtils
 

@@ -5,7 +5,7 @@ from apps.authen.serializers.states_serializer import StatesSerializer
 from apps.commons.consts.journals.journal_event_results import ERROR
 from apps.commons.consts.journals.journal_rec_types import STATES
 from apps.commons.utils.django.response import ResponseUtils
-from apps.commons.utils.models.state import StateUtils
+from apps.authen.utils.state import StateUtils
 from apps.journals.writer.journal_writer import JournalWriter
 
 

@@ -1,8 +1,9 @@
 <template>
   <ui5-shellbar primary-title="Система подачи заявок" secondary-title="ИОХК"
-                @profile-click="$refs.profileMenu.showAt($event.detail.targetRef)">
+                @profile-click="$refs.profileMenu.showAt($event.detail.targetRef)"
+                @logo-click="goToIOHKSite()">
     <ui5-button icon="menu" slot="startButton" @click="showHideMenu"></ui5-button>
-    <img slot="logo" alt="Логотип" src="/media/favicon.ico" @click="window.open('https://iohk.ru', '_blank');">
+    <img slot="logo" alt="Логотип" src="/media/favicon.ico">
     <ui5-avatar slot="profile" ref="avatarButton" color-scheme="Accent1" icon="customer"></ui5-avatar>
   </ui5-shellbar>
   <ui5-popover placement-type="Bottom" ref="profileMenu" >
@@ -88,6 +89,9 @@ export default {
           .then(resp => {
             this.isAdmin = resp.status === 200;
           })
+    },
+    goToIOHKSite() {
+      window.open('https://iohk.ru', '_blank')
     }
   },
   mounted() {

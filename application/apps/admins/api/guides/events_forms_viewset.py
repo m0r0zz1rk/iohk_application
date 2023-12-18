@@ -13,8 +13,8 @@ from apps.commons.permissions.is_auth import IsAuth
 from apps.commons.utils.data_types.dict import DictUtils
 from apps.commons.utils.django.exception import ExceptionHandling
 from apps.commons.utils.django.response import ResponseUtils
-from apps.commons.utils.models.events_form import EventsFormsUtils
-from apps.commons.utils.models.profile import ProfileUtils
+from apps.events.utils.events_form import EventsFormsUtils
+from apps.authen.utils.profile import ProfileUtils
 from apps.journals.writer.journal_writer import JournalWriter
 
 

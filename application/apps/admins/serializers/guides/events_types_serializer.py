@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.admins.models.guides.event_types import EventTypes
-from apps.commons.pagination_serializer import PaginationSerializer
+from apps.events.models.event_types import EventTypes
+from apps.commons.serializers.pagination_serializer import PaginationSerializer
 
 
 class EventsTypeSerializer(serializers.ModelSerializer):

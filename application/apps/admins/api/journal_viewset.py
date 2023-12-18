@@ -13,8 +13,8 @@ from apps.commons.utils.data_types.dict import DictUtils
 from apps.commons.utils.django.exception import ExceptionHandling
 from apps.commons.utils.django.response import ResponseUtils
 from apps.commons.utils.django.rest import RestUtils
-from apps.commons.utils.models.journal import JournalUtils
-from apps.commons.utils.models.profile import ProfileUtils
+from apps.journals.utils.journal import JournalUtils
+from apps.authen.utils.profile import ProfileUtils
 from apps.journals.writer.journal_writer import JournalWriter
 
 

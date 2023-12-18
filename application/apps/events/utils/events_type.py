@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from apps.admins.models.guides.event_types import EventTypes
+from apps.events.models.event_types import EventTypes
 
 
 class EventsTypesUtils:
@@ -17,6 +17,14 @@ class EventsTypesUtils:
         """Получение типа мероприятия по полученному object_id"""
         try:
             return EventTypes.objects.get(object_id=object_id)
+        except Exception:
+            return None
+
+    @staticmethod
+    def get_event_type_object_id_by_name(name: str) -> Optional[uuid]:
+        """Получение object_id типа мероприятия по его имени"""
+        try:
+            return EventTypes.objects.get(name=name).object_id
         except Exception:
             return None
 

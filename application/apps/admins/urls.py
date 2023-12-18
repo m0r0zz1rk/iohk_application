@@ -1,5 +1,7 @@
 from django.urls import path
 
+from apps.admins.api.events_information_viewset import EventsInformationViewSet
+from apps.admins.api.events_viewset import EventsViewSet
 from apps.admins.api.guides.events_forms_viewset import EventsFormsViewSet
 from apps.admins.api.guides.events_types_viewset import EventsTypesViewSet
 from apps.admins.api.guides.participant_categories_viewset import ParticipantCategoriesViewSet
@@ -35,4 +37,17 @@ journal_urlpatterns = [
     path('journal/', JournalViewSet.as_view({'get': 'list'}))
 ]
 
-urlpatterns = guides_urlpatterns + users_urlpatterns + journal_urlpatterns
+events_urlpatterns = [
+    path('events/', EventsViewSet.as_view({'get': 'list'})),
+    path('event_new/', EventsViewSet.as_view({'post': 'save'})),
+    path('event_edit/<uuid:object_id>/', EventsViewSet.as_view({'patch': 'edit'})),
+    path('event_delete/<uuid:object_id>/', EventsViewSet.as_view({'delete': 'delete'})),
+]
+
+events_information_urlpatterns = [
+    path('information/', EventsInformationViewSet.as_view({'get': 'list'})),
+    path('information_save/<uuid:event_id>/', EventsInformationViewSet.as_view({'patch': 'save'})),
+]
+
+urlpatterns = guides_urlpatterns + users_urlpatterns + journal_urlpatterns + \
+            events_urlpatterns + events_information_urlpatterns

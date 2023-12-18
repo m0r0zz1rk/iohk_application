@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from apps.admins.models.guides.participant_categories import ParticipantCategories
-from apps.commons.pagination_serializer import PaginationSerializer
+from apps.commons.serializers.pagination_serializer import PaginationSerializer
 
 
 class ParticipantCategoriesSerializer(serializers.ModelSerializer):

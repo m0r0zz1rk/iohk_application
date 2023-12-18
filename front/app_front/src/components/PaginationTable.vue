@@ -113,6 +113,9 @@
                 <ui5-datetime-picker v-if="obj.ui === 'datetime_picker'"
                                      format-pattern="dd.MM.yyyy HH:mm"
                                      @change="e => filterRecs(e.target.value, obj.field)" />
+                <ui5-daterange-picker v-if="obj.ui === 'date_range_picker'"
+                                      format-pattern="dd.MM.yyyy"
+                                      @change="e => filterRecs(e.target.value, obj.field)"/>
               </ui5-table-cell>
             </template>
             <ui5-table-cell v-if="(obj.ui === 'icon') && (fieldsList.includes('actions'))"
@@ -153,8 +156,10 @@
                 <ui5-multi-combobox v-if="obj.ui === 'multiple'"
                                     :ref="'add_'+obj.field"
                                     :value-state="obj.add_required && 'Warning'"
-                                    :show-suggestions="obj.add_required">
-                  <ui5-mcb-item v-for="option in obj.options" :text="option.name" />
+                                    :show-suggestions="obj.add_required">\
+                  <template v-for="option in obj.options">
+                    <ui5-mcb-item  v-if="option.name !== ''" :text="option.name" />
+                  </template>
                   <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
                 </ui5-multi-combobox>
                 <ui5-date-picker v-if="obj.ui === 'date_picker'"
@@ -173,6 +178,14 @@
                                      :show-suggestions="obj.add_required">
                   <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
                 </ui5-datetime-picker>
+                <ui5-daterange-picker v-if="obj.ui === 'date_range_picker'"
+                                     format-pattern="dd.MM.yyyy"
+                                     :ref="'add_'+obj.field"
+                                     :value="componentGetDay(false)+' - '+componentGetDay(false)"
+                                     :value-state="obj.add_required && 'Warning'"
+                                     :show-suggestions="obj.add_required">
+                  <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
+                </ui5-daterange-picker>
               </ui5-table-cell>
             </template>
             <ui5-table-cell v-if="(obj.ui === 'icon') && (fieldsList.includes('actions'))"
@@ -232,10 +245,19 @@
                     <template v-if="field.alias !== 'checkbox'">
                       <div v-if="row[field.alias] === null">-</div>
                       <template v-if="row[field.alias] !== null">
-                        <JournalEventResultBadge v-if="field.alias === 'event_result'"
-                                                 v-bind:result="row[field.alias]" />
-                        <div v-if="field.alias !== 'event_result'">
-                          {{row[field.alias]}}
+                        <div v-if="row[field.alias].constructor === Array">
+                          <template v-for="object in row[field.alias]">
+                            <ui5-badge  color-scheme="9">
+                              {{object}}
+                            </ui5-badge><br/><br/>
+                          </template>
+                        </div>
+                        <div v-if="row[field.alias].constructor !== Array">
+                          <JournalEventResultBadge v-if="field.alias === 'event_result'"
+                                                   v-bind:result="row[field.alias]" />
+                          <div v-if="field.alias !== 'event_result'">
+                            {{row[field.alias]}}
+                          </div>
                         </div>
                       </template>
                     </template>
@@ -286,19 +308,19 @@
                                   :selected="row[obj.field] === option.name">
                         {{option.name}}
                       </ui5-option>
-                      <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
                     </template>
+                    <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
                   </ui5-select>
                   <ui5-multi-combobox v-if="obj.ui === 'multiple'"
                                       :ref="'edit_'+obj.field"
                                       :value-state="obj.add_required && 'Warning'"
                                       :show-suggestions="obj.add_required">
                     <template v-for="option in obj.options">
-                      <ui5-mcb-item v-if="option !== ''"
+                      <ui5-mcb-item v-if="option.name !== ''"
                                     :text="option.name"
                                     :selected="row[obj.field].filter((value) => value === option.name).length > 0"/>
-                      <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
                     </template>
+                    <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
                   </ui5-multi-combobox>
                   <ui5-date-picker v-if="obj.ui === 'date_picker'"
                                    format-pattern="dd.MM.yyyy"
@@ -316,9 +338,18 @@
                                        :show-suggestions="obj.add_required">
                     <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
                   </ui5-datetime-picker>
+                  <ui5-daterange-picker v-if="obj.ui === 'date_range_picker'"
+                                        format-pattern="dd.MM.yyyy"
+                                        :ref="'edit_'+obj.field"
+                                        :value="row[obj.field]"
+                                        :value-state="obj.add_required && 'Warning'"
+                                        :show-suggestions="obj.add_required">
+                    <div v-if="obj.add_required" slot="valueStateMessage">Обязательно для заполнения</div>
+                  </ui5-daterange-picker>
                 </ui5-table-cell>
               </template>
               <ui5-table-cell v-if="(obj.ui === 'icon') && (fieldsList.includes('actions'))"
+                              style="white-space: nowrap"
                               class="additional-row-cell">
                 <div>
                   <ui5-icon interactive
@@ -521,27 +552,55 @@ export default {
       let add_required = false
       this.fieldsArray.map((column) => {
         if (!(['object_id', 'actions'].includes(column.field))) {
-          console.log(this.$refs['add_'+column.field])
           switch(column.ui) {
             case 'input':
             case 'date_picker':
             case 'datetime_picker':
-              value = this.$refs['add_'+column.field][0].value
+            case 'date_range_picker':
+              try {
+                value = this.$refs['add_'+column.field][0].value
+              } catch (e) {
+                if (column.add_required) {
+                  add_required = true
+                  return false
+                }
+              }
               break
 
             case 'select':
-              value = this.$refs['add_'+column.field][0].selectedOption.innerText
+              try {
+                value = this.$refs['add_'+column.field][0].selectedOption.innerText
+              } catch (e) {
+                if (column.add_required) {
+                  add_required = true
+                  return false
+                }
+              }
               break
 
             case 'multiple':
-              value = []
-              this.$refs['add_'+column.field][0].selectedValues.map((select_value) => {
-                value.push(column.options.filter((option) => option.name === select_value._state.text)[0].object_id)
-              })
+              try {
+                value = []
+                this.$refs['add_'+column.field][0].selectedValues.map((select_value) => {
+                  value.push(column.options.filter((option) => option.name === select_value._state.text)[0].name)
+                })
+              } catch (e) {
+                if (column.add_required) {
+                  add_required = true
+                  return false
+                }
+              }
               break
 
             case 'password':
-              value = this.$refs.add_password.value
+              try {
+                value = this.$refs.add_password.value
+              } catch (e) {
+                if (column.add_required) {
+                  add_required = true
+                  return false
+                }
+              }
           }
           if ((value.length === 0) && (column.add_required)) {
             add_required = true
@@ -555,7 +614,6 @@ export default {
         return false
       }
       this.tableBusy = true
-      this.addRow = false
       await fetch(this.$store.state.backendUrl+this.recAddURL, {
         method: 'POST',
         headers: {
@@ -566,16 +624,12 @@ export default {
         body: JSON.stringify(data)
       })
           .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
+            if (resp.status === 401) {
+              showMessage('error', 'Пожалуйста, войдите в систему', false)
+              this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
+              return false
             } else {
-              if (resp.status === 401) {
-                showMessage('error', 'Пожалуйста, войдите в систему', false)
-                this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-                return false
-              }
-              showMessage('error', 'Произошла ошибка, повторите попытку позже')
-              this.tableBusy = false
+              return resp.json()
             }
           })
           .then(data => {
@@ -598,22 +652,52 @@ export default {
             case 'input':
             case 'date_picker':
             case 'datetime_picker':
-              value = this.$refs['edit_'+column.field][0].value
+            case 'date_range_picker':
+              try {
+                value = this.$refs['edit_'+column.field][0].value
+              } catch (e) {
+                if (column.add_required) {
+                  add_required = true
+                  return false
+                }
+              }
+
               break
 
             case 'select':
-              value = this.$refs['edit_'+column.field][0].selectedOption.innerText
+              try {
+                value = this.$refs['edit_'+column.field][0].selectedOption.innerText
+              } catch (e) {
+                if (column.add_required) {
+                  add_required = true
+                  return false
+                }
+              }
               break
 
             case 'multiple':
-              value = []
-              this.$refs['edit_'+column.field][0].selectedValues.map((select_value) => {
-                value.push(column.options.filter((option) => option.name === select_value._state.text)[0].object_id)
-              })
+              try {
+                value = []
+                this.$refs['edit_'+column.field][0].selectedValues.map((select_value) => {
+                  value.push(column.options.filter((option) => option.name === select_value._state.text)[0].name)
+                })
+              } catch (e) {
+                if (column.add_required) {
+                  add_required = true
+                  return false
+                }
+              }
               break
 
             case 'password':
-              value = this.$refs.edit_password.value
+              try {
+                value = this.$refs.edit_password.value
+              } catch (e) {
+                if (column.add_required) {
+                  add_required = true
+                  return false
+                }
+              }
           }
           if ((value.length === 0) && (column.add_required)) {
             add_required = true
@@ -628,7 +712,6 @@ export default {
       }
       this.tableBusy = true
       let obj_id = this.editRow
-      this.editRow = -1
       await fetch(this.$store.state.backendUrl+this.recEditURL+obj_id+'/', {
         method: 'PATCH',
         headers: {
@@ -639,16 +722,12 @@ export default {
         body: JSON.stringify(data)
       })
           .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
+            if (resp.status === 401) {
+              showMessage('error', 'Пожалуйста, войдите в систему', false)
+              this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
+              return false
             } else {
-              if (resp.status === 401) {
-                showMessage('error', 'Пожалуйста, войдите в систему', false)
-                this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-                return false
-              }
-              showMessage('error', 'Произошла ошибка, повторите попытку позже')
-              this.tableBusy = false
+              return resp.json()
             }
           })
           .then(data => {

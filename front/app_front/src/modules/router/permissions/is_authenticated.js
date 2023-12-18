@@ -22,6 +22,7 @@ const isAuthenticated = (to, from, next) => {
                     next('/?nextUrl='+to.path)
                     return
                 } else {
+                    setCookie('iohk_token', store.state.iohk_token)
                     next()
                     return
                 }

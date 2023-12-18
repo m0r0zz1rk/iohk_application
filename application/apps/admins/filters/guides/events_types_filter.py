@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 
-from apps.admins.models.guides.event_types import EventTypes
+from apps.events.models.event_types import EventTypes
 
 
 class EventsTypesFilter(filters.FilterSet):

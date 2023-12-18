@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tinymce/tinymce-vue": "^4.0.7",
     "@ui5/webcomponents": "^1.20.0",
     "@ui5/webcomponents-base": "^1.20.0",
     "@ui5/webcomponents-fiori": "^1.20.0",

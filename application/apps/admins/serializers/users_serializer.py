@@ -1,15 +1,18 @@
 from rest_framework import serializers
 
-from apps.authen.models import Profiles
+from apps.authen.models import Profiles, States
 from apps.authen.serializers.profile_serializer import ProfileChangePasswordSerializer
 from apps.authen.serializers.registration_serializer import RegistrationUniquePhoneSerializer, \
     RegistrationUniqueEmailSerializer
-from apps.commons.pagination_serializer import PaginationSerializer
+from apps.commons.serializers.pagination_serializer import PaginationSerializer
 
 
 class UsersSerializer(serializers.ModelSerializer):
     """Сериализация данных профиля пользователя"""
-    state = serializers.SerializerMethodField(label='Государство')
+    state = serializers.SlugRelatedField(
+        slug_field='name',
+        queryset=States.objects.all()
+    )
     email = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField(label='Роль')
 

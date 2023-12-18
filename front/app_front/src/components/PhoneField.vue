@@ -1,7 +1,7 @@
 <template>
   <ui5-input type="Text" v-model="componentPhoneField"
              :value-state="phoneValueState" maxlength="18"
-             @input = "e => checkPhoneLength()"
+             @input = "e => checkPhoneLength(e)"
              @change="changePhoneAction && changePhoneAction()" required>
     <div slot="valueStateMessage">{{ phoneStateText }}</div>
   </ui5-input>
@@ -24,7 +24,7 @@ export default {
     changePhoneAction: {type: Function}
   },
   methods: {
-    checkPhoneLength() {
+    checkPhoneLength(e) {
       if (this.componentPhoneField.length > 18) {
         this.componentPhoneField = this.componentPhoneField.substring(0, 17)
       }

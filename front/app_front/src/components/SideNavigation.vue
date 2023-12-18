@@ -2,7 +2,7 @@
   <ui5-side-navigation id="side_nav" ref="sideNavigation" :collapsed="sideNavCollapsed">
     <ui5-side-navigation-item text="Главная" icon="home"
                               :selected="selectedMenu === 'main'"
-                              @click="navigate('main')" />
+                              @click="navigate('/main')" />
     <template v-for="item in items">
       <ui5-side-navigation-item v-if="item.only_admin === isAdmin"
                                 :text="item.text"
@@ -51,7 +51,7 @@ export default {
         {
           text: 'Мероприятия',
           only_admin: true,
-          icon: 'meeting-room',
+          icon: 'education',
           mainMenu: 'admin_events',
           subItems: [
             {

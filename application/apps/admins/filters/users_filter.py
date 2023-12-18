@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User, Group
 from django_filters import rest_framework as filters
-from django_filters import filters as df_filters
 
 from apps.authen.models import Profiles
 
@@ -38,7 +37,6 @@ class UsersFilter(filters.FilterSet):
         if not value or value == '':
             return queryset
         group = Group.objects.get(name=value)
-        print(group)
         users_ids = [user.id for user in User.objects.all() if group.user_set.filter(id=user.id).exists()]
         queryset = Profiles.objects.filter(django_user_id__in=users_ids)
         return queryset

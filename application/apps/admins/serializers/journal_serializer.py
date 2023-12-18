@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from apps.commons.pagination_serializer import PaginationSerializer
+from apps.commons.serializers.pagination_serializer import PaginationSerializer
 from apps.journals.models import Journal
 
 
 class JournalSerializer(serializers.ModelSerializer):
     """Сериализация данных записей журнала"""
     rec_type = serializers.SerializerMethodField(
-        label=''
+        label='Тип записи'
     )
     def get_rec_type(self, obj):
         return obj.get_rec_type_display()

@@ -1,4 +1,4 @@
-from .journal import *
+from .tinymce import *
 
 SWAGGER_SETTINGS = {
    'USE_SESSION_AUTH': False,

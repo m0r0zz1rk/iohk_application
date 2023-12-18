@@ -39,3 +39,14 @@ class ParticipantCategoryUtils:
         if Group.objects.filter(name=name).exists():
             return Group.objects.get(name=name).id
         return None
+
+    @staticmethod
+    def get_object_id_array_by_names(names: list) -> Optional[list]:
+        """Получение списка object_id категорий по полученному списку имен"""
+        try:
+            res = []
+            for name in names:
+                res.append(ParticipantCategories.objects.get(name=name).object_id)
+            return res
+        except Exception:
+            return None

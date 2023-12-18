@@ -9,7 +9,7 @@ from apps.commons.utils.data_types.dict import DictUtils
 from apps.commons.utils.django.exception import ExceptionHandling
 from apps.commons.utils.generate import GenerateUtils
 from apps.commons.utils.data_types.list import ListUtils
-from apps.commons.utils.models.profile import ProfileUtils
+from apps.authen.utils.profile import ProfileUtils
 from apps.journals.writer.journal_writer import JournalWriter
 
 
