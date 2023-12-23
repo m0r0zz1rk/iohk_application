@@ -159,7 +159,7 @@ ui5-shellbar::part(root) {
   height: calc(97vh - 80px);
   border: none;
   z-index: 10;
-  overflow: hidden;
+  overflow: auto;
 }
 
 </style>

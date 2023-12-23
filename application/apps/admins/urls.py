@@ -1,7 +1,10 @@
 from django.urls import path
 
-from apps.admins.api.events_information_viewset import EventsInformationViewSet
-from apps.admins.api.events_viewset import EventsViewSet
+from apps.admins.api.events.event_app_fields_viewset import EventAppFieldsViewSet
+from apps.admins.api.events.events_app_required_viewset import EventsAppRequiredViewSet
+from apps.admins.api.events.events_information_viewset import EventsInformationViewSet
+from apps.admins.api.events.events_schedule_viewset import EventsScheduleViewSet
+from apps.admins.api.events.events_viewset import EventsViewSet
 from apps.admins.api.guides.events_forms_viewset import EventsFormsViewSet
 from apps.admins.api.guides.events_types_viewset import EventsTypesViewSet
 from apps.admins.api.guides.participant_categories_viewset import ParticipantCategoriesViewSet
@@ -49,5 +52,26 @@ events_information_urlpatterns = [
     path('information_save/<uuid:event_id>/', EventsInformationViewSet.as_view({'patch': 'save'})),
 ]
 
+events_schedule_urlpatterns = [
+    path('schedule/<uuid:event_id>/', EventsScheduleViewSet.as_view({'get': 'list'})),
+    path('schedule_add/<uuid:event_id>/', EventsScheduleViewSet.as_view({'post': 'save'})),
+    path('schedule_edit/<uuid:schedule_id>/', EventsScheduleViewSet.as_view({'patch': 'edit'})),
+    path('schedule_delete/<uuid:schedule_id>/', EventsScheduleViewSet.as_view({'delete': 'delete'})),
+]
+
+events_apps_required_urlpatterns = [
+    path('apps_required/<uuid:event_id>/', EventsAppRequiredViewSet.as_view({'get': 'list'})),
+    path('apps_required_edit/', EventsAppRequiredViewSet.as_view({'post': 'edit'})),
+]
+
+event_app_fields_urlpatterns = [
+    path('app_fields/<uuid:event_id>/<str:app_type>/', EventAppFieldsViewSet.as_view({'get': 'list'})),
+    path('app_field_new/', EventAppFieldsViewSet.as_view({'post': 'save'})),
+    path('app_field_edit/<uuid:field_id>/', EventAppFieldsViewSet.as_view({'patch': 'edit'})),
+    path('app_field_delete/<uuid:field_id>/', EventAppFieldsViewSet.as_view({'delete': 'delete'})),
+]
+
 urlpatterns = guides_urlpatterns + users_urlpatterns + journal_urlpatterns + \
-            events_urlpatterns + events_information_urlpatterns
+            events_urlpatterns + events_information_urlpatterns + \
+            events_schedule_urlpatterns + events_apps_required_urlpatterns + \
+            event_app_fields_urlpatterns

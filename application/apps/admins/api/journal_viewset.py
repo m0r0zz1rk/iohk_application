@@ -2,8 +2,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
-from apps.admins.filters.journal_filter import JournalFilter
-from apps.admins.serializers.journal_serializer import JournalPaginationSerializer, JournalSerializer
+from apps.journals.filters.journal_filter import JournalFilter
+from apps.journals.serializers.journal_serializer import JournalPaginationSerializer, JournalSerializer
 from apps.commons.consts.journals.journal_event_results import SUCCESS, ERROR
 from apps.commons.consts.journals.journal_rec_types import ADMINS
 from apps.commons.pagination import CustomPagination

@@ -2,8 +2,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
-from apps.admins.filters.events_filter import EventsFilter
-from apps.admins.serializers.events_serializer import EventsPaginationSerializer, EventsSerializer, EventSaveSerializer, \
+from apps.events.filters.events_filter import EventsFilter
+from apps.events.serializers.events_serializer import EventsPaginationSerializer, EventsSerializer, EventSaveSerializer, \
     EventModelSerializer
 from apps.commons.consts.journals.journal_event_results import SUCCESS, ERROR
 from apps.commons.consts.journals.journal_rec_types import ADMINS
@@ -216,7 +216,7 @@ class EventsViewSet(viewsets.ModelViewSet):
         tags=['Мероприятия (ЛК Администратора)'],
         operation_description="Удаление мероприятия",
         responses={
-            '400': 'Ошибка при удалении мероприятиz: (текст ошибки)',
+            '400': 'Ошибка при удалении мероприятия: (текст ошибки)',
             '401': 'Пользователь не авторизован',
             '403': 'Доступ запрещен',
             '200': 'Мероприятие успешно удалено'

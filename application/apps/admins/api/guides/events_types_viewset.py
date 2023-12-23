@@ -2,7 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
-from apps.admins.filters.guides.events_types_filter import EventsTypesFilter
+from apps.events.filters.events_types_filter import EventsTypesFilter
 from apps.admins.serializers.guides.events_types_serializer import EventsTypeSerializer, \
     EventsTypesSaveSerializer, EventsTypePaginationSerializer
 from apps.commons.consts.journals.journal_event_results import SUCCESS, ERROR

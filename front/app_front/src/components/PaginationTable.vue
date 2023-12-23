@@ -4,35 +4,40 @@
       <div>
         <div class="upper-table-container">
           <div>
-            <ui5-button v-if="this.addButton"
-                        icon="add"
-                        @click="addRow = true">Добавить</ui5-button>
-            &nbsp;
-            <ui5-button v-if="this.changeShowFields"
-                        icon="screen-split-three" ref="fieldsButton"
-                        @click="e => this.$refs.fields_popover.showAt(this.$refs.fieldsButton)">
-              Столбцы
-            </ui5-button>
-            <ui5-popover v-if="this.changeShowFields"
-                         placement-type="Right"
-                         ref="fields_popover">
-              <ui5-multi-combobox style="width: 50vw;"
-                                  @selection-change="e => changeFieldView(e.detail.items)">
-                <ui5-mcb-item v-for="item in tableColumns"
-                              :text="item.name"
-                              :selected="item.alias !== 'object_id'" />
-              </ui5-multi-combobox>
-            </ui5-popover>
-            &nbsp;&nbsp;
-            <ui5-button v-if="this.info"
-                        icon="information"
-                        @click="this.$refs.info_popover.showAt($event.detail.targetRef)">
-              Справка
-            </ui5-button>
-            <ui5-popover v-if="this.info"
-                         placement-type="Right">
-              {{infoText}}
-            </ui5-popover>
+            <div v-if="this.addButton" style="display: inline-block">
+              <ui5-button icon="add"
+                          @click="addRow = true">Добавить</ui5-button>
+              &nbsp;
+            </div>
+            <div v-if="this.changeShowFields" style="display: inline-block">
+              <ui5-button
+                  icon="screen-split-three" ref="fieldsButton"
+                  @click="e => this.$refs.fields_popover.showAt(this.$refs.fieldsButton)">
+                Столбцы
+              </ui5-button>
+              <ui5-popover v-if="this.changeShowFields"
+                           placement-type="Right"
+                           ref="fields_popover">
+                <ui5-multi-combobox style="width: 50vw;"
+                                    @selection-change="e => changeFieldView(e.detail.items)">
+                  <ui5-mcb-item v-for="item in tableColumns"
+                                :text="item.name"
+                                :selected="item.alias !== 'object_id'" />
+                </ui5-multi-combobox>
+              </ui5-popover>
+              &nbsp;&nbsp;
+            </div>
+            <div v-if="this.info" style="display: inline-block">
+              <ui5-button
+                  icon="information"
+                  @click="e => this.$refs.info_popover.showAt(e.target)">
+                Справка
+              </ui5-button>
+              <ui5-popover v-if="this.info" ref="info_popover"
+                           placement-type="Right">
+                {{infoText}}
+              </ui5-popover>
+            </div>
           </div>
           <div>
             <div style="display: inline-block">
@@ -208,12 +213,13 @@
           <ui5-table-row v-if="editRow !== row.object_id"
                          :type="activeRow"
                          @click="activeRowEvent && activeRowEvent(row)">
-            <ui5-table-cell style="white-space: nowrap">
+            <ui5-table-cell style="white-space: nowrap" :class="row.warning && 'warning-row-cell'">
               <p v-if="!(tableBusy)">{{(id+1) + (recCount*(pageNumber-1))}}</p>
             </ui5-table-cell>
             <template v-for="field in tableColumns">
               <template v-if="field.alias !== 'actions'">
                 <ui5-table-cell v-if="fieldsList.includes(field.alias)"
+                                :class="row.warning && 'warning-row-cell'"
                                 :style="'white-space: '+field.whiteSpace">
                   <div v-if="[true, false].includes(row[field.alias])">
                     <div v-if="field.alias === 'sex'">
@@ -266,12 +272,15 @@
                 </ui5-table-cell>
               </template>
               <ui5-table-cell v-if="(field.alias === 'actions') && (fieldsList.includes('actions'))"
+                              :class="row.warning && 'warning-row-cell'"
                               :style="'white-space: '+field.whiteSpace">
                 <ui5-icon interactive
+                          :class="row.warning && 'additional-row-icon'"
                           name="edit"
                           @click="setEditRow(row)"/>
                 &nbsp;&nbsp;
                 <ui5-icon interactive
+                          :class="row.warning && 'additional-row-icon'"
                           name="delete"
                           @click="delRec(row.object_id)"/>
               </ui5-table-cell>
@@ -408,6 +417,8 @@ export default {
     recAddURL: {type: String},
     recEditURL: {type: String},
     recDeleteURL: {type: String},
+    info: {type: Boolean},
+    infoText: {type: String},
     searchRow: {type: Boolean},
     changeShowFields: {type: Boolean},
     colCount: {type: Number},
@@ -426,8 +437,6 @@ export default {
       additionalData: {},
       tableBusy: true,
       fieldsList: [],
-      info: false,
-      infoText: '',
       recsTotalCount: 0,
       pageNumber: 1,
       pageTotal: 1,
@@ -818,7 +827,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 
 #data_table {
   width: 100%;
@@ -836,6 +845,11 @@ export default {
 
 .additional-row-cell {
   background-color: #00455d;
+  color: white;
+}
+
+.warning-row-cell {
+  background-color: #e55c02;
   color: white;
 }
 
