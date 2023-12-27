@@ -4,6 +4,7 @@ from django.db.models import Q
 from django_filters import rest_framework as filters
 
 from apps.admins.models.guides.participant_categories import ParticipantCategories
+from apps.commons.consts.events.event_statuses import EVENT_STATUSES
 from apps.commons.utils.data_types.date import DateUtils
 from apps.events.models import Events
 from apps.events.models.event_types import EventTypes
@@ -19,6 +20,9 @@ class EventsFilter(filters.FilterSet):
     )
     event_type = filters.CharFilter(
         method='filter_event_type'
+    )
+    event_status = filters.CharFilter(
+        method='filter_event_status'
     )
     app_date_range = filters.CharFilter(
         method='filter_app_date_range'
@@ -36,6 +40,14 @@ class EventsFilter(filters.FilterSet):
         type_id = EventTypes.objects.get(name=value).object_id
         queryset = queryset.filter(event_type_id=type_id)
         return queryset
+
+    def filter_event_status(self, queryset, name, value):
+        if not value or value == '':
+            return queryset
+        statuses = {value: key for key, value in EVENT_STATUSES}
+        queryset = queryset.filter(event_status=statuses[value])
+        return queryset
+
 
     def filter_app_date_range(self, queryset, name, value):
         if not value or value == '':

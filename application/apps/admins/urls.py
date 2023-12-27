@@ -42,6 +42,7 @@ journal_urlpatterns = [
 
 events_urlpatterns = [
     path('events/', EventsViewSet.as_view({'get': 'list'})),
+    path('event/<uuid:event_id>/', EventsViewSet.as_view({'get': 'retrieve'})),
     path('event_new/', EventsViewSet.as_view({'post': 'save'})),
     path('event_edit/<uuid:object_id>/', EventsViewSet.as_view({'patch': 'edit'})),
     path('event_delete/<uuid:object_id>/', EventsViewSet.as_view({'delete': 'delete'})),

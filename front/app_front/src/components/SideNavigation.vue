@@ -67,6 +67,13 @@ export default {
           ]
         },
         {
+          text: 'Заявки',
+          only_admin: true,
+          icon: 'request',
+          mainMenu: 'apps',
+          next: '/apps'
+        },
+        {
           text: 'Журнал',
           only_admin: true,
           icon: 'time-account',

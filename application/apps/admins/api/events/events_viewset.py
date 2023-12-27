@@ -1,10 +1,11 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
 from apps.events.filters.events_filter import EventsFilter
 from apps.events.serializers.events_serializer import EventsPaginationSerializer, EventsSerializer, EventSaveSerializer, \
-    EventModelSerializer
+    EventModelSerializer, EventGetSerializer
 from apps.commons.consts.journals.journal_event_results import SUCCESS, ERROR
 from apps.commons.consts.journals.journal_rec_types import ADMINS
 from apps.commons.pagination import CustomPagination
@@ -73,6 +74,38 @@ class EventsViewSet(viewsets.ModelViewSet):
             )
             return self.ru.bad_request_response(
                 f'Ошибка при получении мероприятий'
+            )
+
+    @swagger_auto_schema(
+        tags=['Мероприятия (ЛК Администратора)'],
+        operation_description="Получение мероприятия",
+        responses={
+            '400': 'Ошибка при получении мероприятия: (текст ошибки)',
+            '401': 'Пользователь не авторизован',
+            '403': 'Доступ запрещен',
+            '200': EventsSerializer,
+        }
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Получение мероприятия"""
+        try:
+            event = EventsUtils.get_event_by_object_id(self.kwargs['event_id'])
+            serializer = self.get_serializer(event)
+            self.journal.write(
+                self.pu.get_display_name('django_user_id', request.user.id),
+                SUCCESS,
+                'Просмотр мероприятия'
+            )
+            return self.ru.ok_response_dict(serializer.data)
+        except Exception:
+            self.journal.write(
+                'Система',
+                ERROR,
+                f'Ошибка при получении мероприятия: '
+                f'{ExceptionHandling.get_traceback()}'
+            )
+            return self.ru.bad_request_response(
+                f'Ошибка при получении мероприятия'
             )
 
     @swagger_auto_schema(

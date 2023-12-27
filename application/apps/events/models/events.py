@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 
 from apps.admins.models.guides.participant_categories import ParticipantCategories
+from apps.commons.consts.events.event_statuses import EVENT_STATUSES, CREATED
 from apps.commons.models import BaseTable
 from apps.events.models.event_types import EventTypes
 
@@ -25,6 +26,12 @@ class Events(BaseTable):
         null=True,
         default=None,
         verbose_name='Тип мероприятия'
+    )
+    event_status = models.CharField(
+        max_length=30,
+        choices=EVENT_STATUSES,
+        default=CREATED,
+        verbose_name='Статус мероприятия'
     )
     app_date_start = models.DateField(
         default=datetime.date.today,

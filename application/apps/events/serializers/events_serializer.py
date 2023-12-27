@@ -36,6 +36,7 @@ class EventsSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'event_type',
+            'event_status',
             'app_date_range',
             'date_range',
             'categories'
@@ -45,6 +46,14 @@ class EventsSerializer(serializers.ModelSerializer):
 class EventsPaginationSerializer(PaginationSerializer):
     """Сериализация пагинационных данных мероприятий"""
     results = EventsSerializer(many=True)
+
+
+class EventGetSerializer(serializers.Serializer):
+    """Сериализация запроса для получения мероприятия"""
+    event_id=serializers.UUIDField(
+        allow_null=False,
+        label='Object_id мероприятия'
+    )
 
 
 class EventSaveSerializer(EventsSerializer):

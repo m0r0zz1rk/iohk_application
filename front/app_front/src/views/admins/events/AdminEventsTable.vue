@@ -19,6 +19,10 @@
                          v-bind:tableColumns="tableColumns"
                          v-bind:fieldsArray="fieldsArray"
                          v-bind:dataTableHeight="dataTableHeight"
+                         v-bind:additionalManageIcon="{
+                           icon: 'settings',
+                           function: goToEventManage
+                         }"
         />
       </div>
     </ui5-card>
@@ -132,6 +136,37 @@ export default {
                       add_required: true
                     },
                     {
+                      ui: 'select',
+                      options: [
+                        {
+                          id: 0,
+                          name: ''
+                        },
+                        {
+                          id: 1,
+                          name: 'Создано'
+                        },
+                        {
+                          id: 2,
+                          name: 'Опубликовано'
+                        },
+                        {
+                          id: 3,
+                          name: 'Отменено'
+                        },
+                        {
+                          id: 4,
+                          name: 'В процессе'
+                        },
+                        {
+                          id: 5,
+                          name: 'Снято с публикации'
+                        }
+                      ],
+                      field: 'event_status',
+                      add_required: false
+                    },
+                    {
                       ui: 'date_range_picker',
                       field: 'app_date_range',
                       add_required: true
@@ -159,6 +194,9 @@ export default {
                   }
                 })
           })
+    },
+    goToEventManage(event_id) {
+      this.$router.push('/admin_events/manage?eventId='+event_id)
     }
   },
   mounted() {

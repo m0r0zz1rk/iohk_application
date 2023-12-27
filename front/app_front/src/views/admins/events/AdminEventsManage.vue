@@ -9,13 +9,24 @@
           <div style="display: inline-block">
             <table>
               <tr>
-                <td>Мероприятие:</td>
+                <td style="text-align: right;">Мероприятие:</td>
                 <td>
                   <div v-if="selectedEvent === null">
                     <ui5-badge color-scheme="3">Не выбрано</ui5-badge>
                   </div>
                   <div v-if="selectedEvent !== null">
                     <b>{{selectedEvent.name}} ({{selectedEvent.date_range}})</b>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align: right;">Статус:</td>
+                <td>
+                  <div v-if="selectedEvent === null">
+                    <ui5-badge color-scheme="3">Не выбрано</ui5-badge>
+                  </div>
+                  <div v-if="selectedEvent !== null">
+                    <EventStatus v-bind:status="selectedEvent.event_status" />
                   </div>
                 </td>
               </tr>
@@ -51,7 +62,7 @@
             <TinyMCE ref='infoTinyMCE'
                      v-bind:Information="Information"
                      v-bind:additional-data="{name: selectedEvent.name}"
-                     v-bind:editorHeight="540" />
+                     v-bind:editorHeight="500" />
           </div>
           <div v-if="selectedTab === 'schedule'" class="tab-divs">
             <PaginationTable v-bind:recsURL="'/api/v1/admins/schedule/'+this.selectedEvent.object_id+'/'"
@@ -66,7 +77,7 @@
                              v-bind:addButton="true"
                              v-bind:tableColumns="scheduleTableColumns"
                              v-bind:fieldsArray="scheduleFieldsArray"
-                             v-bind:dataTableHeight="55"
+                             v-bind:dataTableHeight="51"
             />
           </div>
           <div v-if="selectedTab === 'user_form'" class="tab-divs">
@@ -449,10 +460,11 @@ import PaginationTable from "../../../components/PaginationTable.vue";
 import AdminEventsTable from "./AdminEventsTable.vue";
 import TinyMCE from "../../../components/TinyMCE.vue";
 import app_form_field_types from "../../../consts/app_form_field_types.js";
+import EventStatus from "../../../components/badges/EventStatus.vue";
 
 export default {
   name: 'AdminEventsManage',
-  components: {TinyMCE, AdminEventsTable, LkBase, PaginationTable},
+  components: {EventStatus, TinyMCE, AdminEventsTable, LkBase, PaginationTable},
   data() {
     return {
       Information: '(информация)',
@@ -502,6 +514,33 @@ export default {
     }
   },
   methods: {
+    async init () {
+      let url = new URL(window.location.href);
+      if (url.searchParams.has('eventId')) {
+        await fetch(this.$store.state.backendUrl+'/api/v1/admins/event/'+url.searchParams.get('eventId')+'/', {
+          method: 'GET',
+          headers: {
+            'X-CSRFToken': getCookie("csrftoken"),
+            'Content-Type': 'web_app/json;charset=UTF-8',
+            'Authorization': 'Token '+getCookie('iohk_token')
+          },
+        })
+            .then(resp => {
+              if (resp.status === 200) {
+                return resp.json()
+              } else {
+                showMessage('error', 'Произошла ошибка при получении информации о мероприятии, повторите попытку позже')
+                return false
+              }
+            })
+            .then(data => {
+              this.selectedEvent = data
+              console.log(this.selectedEvent)
+              this.selectedTab = ''
+              this.getEventInformation()
+            })
+      }
+    },
     async getForms() {
       await fetch(this.$store.state.backendUrl+'/api/v1/admins/events_forms/', {
         method: 'GET',
@@ -889,6 +928,7 @@ export default {
   },
   mounted() {
     this.getForms()
+    this.init()
   }
 }
 </script>
@@ -898,7 +938,7 @@ export default {
     width: 100%;
     text-align: center;
     justify-content: center;
-    height: 65vh;
+    height: 61vh;
     overflow: auto;
   }
 

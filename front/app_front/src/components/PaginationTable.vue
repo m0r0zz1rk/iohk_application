@@ -134,7 +134,10 @@
             <ui5-icon name="add" style="color: white" />
           </ui5-table-cell>
           <template v-for="obj in fieldsArray">
-            <template v-if="obj.ui !== 'icon'">
+            <template v-if="noAddEditField.includes(obj.field)">
+              <ui5-table-cell class="additional-row-cell">-</ui5-table-cell>
+            </template>
+            <template v-if="(obj.ui !== 'icon') && !(noAddEditField.includes(obj.field))">
               <ui5-table-cell v-if="fieldsList.includes(obj.field)"
                               class="additional-row-cell">
                 <p v-if="['None', 'checkbox'].includes(obj.ui)">-</p>
@@ -261,7 +264,9 @@
                         <div v-if="row[field.alias].constructor !== Array">
                           <JournalEventResultBadge v-if="field.alias === 'event_result'"
                                                    v-bind:result="row[field.alias]" />
-                          <div v-if="field.alias !== 'event_result'">
+                          <EventStatus v-if="field.alias === 'event_status'"
+                                       v-bind:status="row[field.alias]" />
+                          <div v-if="!(['event_result', 'event_status'].includes(field.alias))">
                             {{row[field.alias]}}
                           </div>
                         </div>
@@ -273,7 +278,13 @@
               </template>
               <ui5-table-cell v-if="(field.alias === 'actions') && (fieldsList.includes('actions'))"
                               :class="row.warning && 'warning-row-cell'"
-                              :style="'white-space: '+field.whiteSpace">
+                              style="white-space: nowrap">
+                <ui5-icon v-if="additionalManageIcon"
+                          interactive
+                          :class="row.warning && 'additional-row-icon'"
+                          :name="additionalManageIcon.icon"
+                          @click="additionalManageIcon.function(row.object_id)" />
+                &nbsp;&nbsp;
                 <ui5-icon interactive
                           :class="row.warning && 'additional-row-icon'"
                           name="edit"
@@ -292,7 +303,24 @@
               <ui5-icon name="edit" style="color: white"/>
             </ui5-table-cell>
             <template v-for="obj in fieldsArray">
-              <template v-if="obj.ui !== 'icon'">
+              <template v-if="noAddEditField.includes(obj.field)">
+                  <ui5-table-cell v-if="obj.field === 'event_status'"
+                                  class="additional-row-cell">
+                    <ui5-select v-if="['CREATED', 'PUBLISHED', 'REMOVED'].includes(row[obj.field])"
+                                ref="edit_event_status">
+                      <ui5-option value="PUBLISHED" :selected="row[obj.field] === 'PUBLISHED'">Опубликовано</ui5-option>
+                      <ui5-option value="CANCELED" :selected="row[obj.field] === 'CANCELED'">Отменено</ui5-option>
+                      <ui5-option value="REMOVED" :selected="row[obj.field] === 'REMOVED'">Снято с публикации</ui5-option>
+                    </ui5-select>
+                    <ui5-select v-if="!(['CREATED', 'PUBLISHED', 'REMOVED'].includes(row[obj.field]))"
+                                ref="edit_event_status" readonly>
+                      <ui5-option :value="row[obj.field]">
+                        {{getEventStatusDisplayName(row[obj.field])}}
+                      </ui5-option>
+                    </ui5-select>
+                  </ui5-table-cell>
+              </template>
+              <template v-if="(obj.ui !== 'icon') && !(noAddEditField.includes(obj.field))">
                 <ui5-table-cell v-if="fieldsList.includes(obj.field)"
                                 class="additional-row-cell">
                   <PasswordField v-if="obj.ui === 'password'"
@@ -407,10 +435,12 @@ import PasswordField from "./PasswordField.vue";
 import SexBadge from "./badges/SexBadge.vue";
 import PhoneField from "./PhoneField.vue";
 import JournalEventResultBadge from "./badges/JournalEventResultBadge.vue";
+import EventStatus from "./badges/EventStatus.vue";
+import {event_status_db_name, event_status_display_name} from "../consts/event_status_display_name.js";
 
 export default {
   name: 'PaginationTable',
-  components: {JournalEventResultBadge, PhoneField, SexBadge, PasswordField},
+  components: {EventStatus, JournalEventResultBadge, PhoneField, SexBadge, PasswordField},
   props: {
     tableMode: {type: String},
     recsURL: {type: String},
@@ -428,9 +458,11 @@ export default {
     tableColumns: {type: Array},
     fieldsArray: {type: Array},
     dataTableHeight: {type: Number},
+    additionalManageIcon: {type: Object},
   },
   data() {
     return {
+      noAddEditField: ['event_status',],
       recs: [],
       states: [],
       filterString: '',
@@ -656,69 +688,75 @@ export default {
       let value = null
       let add_required = false
       this.fieldsArray.map((column) => {
-        if (!(['object_id', 'actions'].includes(column.field))) {
-          switch(column.ui) {
-            case 'input':
-            case 'date_picker':
-            case 'datetime_picker':
-            case 'date_range_picker':
-              try {
-                value = this.$refs['edit_'+column.field][0].value
-              } catch (e) {
-                if (column.add_required) {
-                  add_required = true
-                  return false
+        if (column.field === 'event_status') {
+          console.log(this.$refs.edit_event_status)
+          data['event_status'] = event_status_db_name(this.$refs.edit_event_status[0].selectedOption.innerText)
+        } else {
+          if (!(['object_id', 'actions'].includes(column.field))) {
+            switch(column.ui) {
+              case 'input':
+              case 'date_picker':
+              case 'datetime_picker':
+              case 'date_range_picker':
+                try {
+                  value = this.$refs['edit_'+column.field][0].value
+                } catch (e) {
+                  if (column.add_required) {
+                    add_required = true
+                    return false
+                  }
                 }
-              }
 
-              break
+                break
 
-            case 'select':
-              try {
-                value = this.$refs['edit_'+column.field][0].selectedOption.innerText
-              } catch (e) {
-                if (column.add_required) {
-                  add_required = true
-                  return false
+              case 'select':
+                try {
+                  value = this.$refs['edit_'+column.field][0].selectedOption.innerText
+                } catch (e) {
+                  if (column.add_required) {
+                    add_required = true
+                    return false
+                  }
                 }
-              }
-              break
+                break
 
-            case 'multiple':
-              try {
-                value = []
-                this.$refs['edit_'+column.field][0].selectedValues.map((select_value) => {
-                  value.push(column.options.filter((option) => option.name === select_value._state.text)[0].name)
-                })
-              } catch (e) {
-                if (column.add_required) {
-                  add_required = true
-                  return false
+              case 'multiple':
+                try {
+                  value = []
+                  this.$refs['edit_'+column.field][0].selectedValues.map((select_value) => {
+                    value.push(column.options.filter((option) => option.name === select_value._state.text)[0].name)
+                  })
+                } catch (e) {
+                  if (column.add_required) {
+                    add_required = true
+                    return false
+                  }
                 }
-              }
-              break
+                break
 
-            case 'password':
-              try {
-                value = this.$refs.edit_password.value
-              } catch (e) {
-                if (column.add_required) {
-                  add_required = true
-                  return false
+              case 'password':
+                try {
+                  value = this.$refs.edit_password.value
+                } catch (e) {
+                  if (column.add_required) {
+                    add_required = true
+                    return false
+                  }
                 }
-              }
+            }
+            if ((value.length === 0) && (column.add_required)) {
+              add_required = true
+              return false
+            }
+            data[column.field] = value
           }
-          if ((value.length === 0) && (column.add_required)) {
-            add_required = true
-            return false
-          }
-          data[column.field] = value
         }
       })
       if (add_required) {
         showMessage('error', 'Заполните обязательные поля формы')
         return false
       }
+      console.log(data)
       this.tableBusy = true
       let obj_id = this.editRow
       await fetch(this.$store.state.backendUrl+this.recEditURL+obj_id+'/', {
@@ -791,6 +829,9 @@ export default {
         this.$refs.edit_password.passwordStr = row.password
       }
     },
+    getEventStatusDisplayName(event_status) {
+      return event_status_display_name(event_status)
+    }
   },
   watch: {
     pageNumber: function() {
