@@ -31,6 +31,7 @@ import LkLoader from '../components/LkLoader.vue'
 import PreLoader from '../App.vue'
 import store from "../modules/store/index.js";
 import SideNavigation from "./SideNavigation.vue";
+import {apiRequest} from "../additional/functions/api_request.js";
 export default {
   name: 'Base',
   components: {
@@ -80,13 +81,15 @@ export default {
           })
     },
     async checkAdmin() {
-      await fetch(store.state.backendUrl+'/api/v1/auth/check_admin/', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Token '+store.state.iohk_token
-        },
-      })
-          .then(resp => {
+      apiRequest(
+          store.state.backendUrl+'/api/v1/auth/check_admin/',
+          'GET',
+          true,
+          null,
+          false,
+          true
+      )
+      .then(resp => {
             this.isAdmin = resp.status === 200;
           })
     },

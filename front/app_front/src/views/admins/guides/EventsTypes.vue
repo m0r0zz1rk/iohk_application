@@ -25,6 +25,7 @@
     components: {PaginationTable},
     data() {
       return {
+        eventTypes: [],
         dataTableHeight: 60,
         recsURL: '/api/v1/admins/events_types/',
         recAddURL: '/api/v1/admins/events_type_new/',
@@ -38,6 +39,7 @@
         tableColumns: [
           {name: 'ID объекта', alias: 'object_id', whiteSpace: 'nowrap'},
           {name: 'Наименование', alias: 'name', whiteSpace: 'nowrap'},
+          {name: 'Множественное число', alias: 'name_plural', whiteSpace: 'nowrap'},
           {name: 'Действия', alias: 'actions'}
         ],
         fieldsArray: [
@@ -49,6 +51,12 @@
             ui: 'input',
             type: 'Text',
             field: 'name',
+            add_required: true
+          },
+          {
+            ui: 'input',
+            type: 'Text',
+            field: 'name_plural',
             add_required: true
           },
           {

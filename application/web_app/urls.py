@@ -13,10 +13,11 @@ media_root = du.get_parameter_from_settings('MEDIA_ROOT')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/auth/', include('apps.authen.urls')),
     path('api/v1/admins/', include('apps.admins.urls')),
     path('api/v1/applications/', include('apps.applications.urls')),
-    path('api/v1/commons/', include('apps.commons.urls'))
+    path('api/v1/auth/', include('apps.authen.urls')),
+    path('api/v1/commons/', include('apps.commons.urls')),
+    path('api/v1/users/', include('apps.users.urls')),
 ]
 
 urlpatterns += static(static_url, document_root=static_root)

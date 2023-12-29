@@ -1,7 +1,12 @@
+import datetime
 import uuid
 from typing import Optional
 
+from django.contrib.auth.models import Group
+from django.db.models import Q
+
 from apps.admins.utils.participant_category import ParticipantCategoryUtils
+from apps.commons.consts.events.event_statuses import PUBLISHED
 from apps.events.models.events import Events
 
 
@@ -12,6 +17,20 @@ class EventsUtils:
     def get_all_events():
         """Получение всех мероприятий"""
         return Events.objects.all().order_by('-date_start')
+
+    @staticmethod
+    def get_events_by_event_type_and_group(event_type: str, user_group: str) -> Optional[Events]:
+        """Получение списка мероприятий по полученному названию типа мероприятия"""
+        try:
+            type_events = Events.objects.filter(event_type__name=event_type)
+            criteria1 = Q(app_date_start__lte=datetime.date.today())
+            criteria2 = Q(app_date_end__gte=datetime.date.today())
+            return (type_events.filter(event_status=PUBLISHED).
+                    filter(criteria1 & criteria2).
+                    filter(categories__group__name=user_group).
+                    order_by('app_date_start'))
+        except Exception:
+            return None
 
     @staticmethod
     def create_event_from_data(data: dict) -> bool:

@@ -26,6 +26,7 @@
 <script>
 
 import store from "../modules/store/index.js";
+import {apiRequest} from "../additional/functions/api_request.js";
 
 export default {
   name: 'SideNavigation',
@@ -47,6 +48,13 @@ export default {
           icon: 'company-view',
           mainMenu: 'users',
           next: '/users'
+        },
+        {
+          text: 'Мероприятия',
+          only_admin: false,
+          icon: 'education',
+          mainMenu: 'events',
+          next: '/events'
         },
         {
           text: 'Мероприятия',
@@ -91,13 +99,15 @@ export default {
       this.$router.push(name_component)
     },
     async checkAdmin() {
-      fetch(store.state.backendUrl+'/api/v1/auth/check_admin/', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Token '+store.state.iohk_token
-        },
-      })
-          .then(resp => {
+      apiRequest(
+          store.state.backendUrl+'/api/v1/auth/check_admin/',
+          'GET',
+          true,
+          null,
+          false,
+          true
+      )
+        .then(resp => {
             this.isAdmin = resp.status === 200;
           })
     }

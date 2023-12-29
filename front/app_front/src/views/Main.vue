@@ -34,6 +34,7 @@
 
 <script>
 import LkBase from '../components/LkBase.vue'
+import {apiRequest} from "../additional/functions/api_request.js";
 
 export default {
   name: 'Main',
@@ -58,14 +59,14 @@ export default {
       )
     },
     async getProfileData() {
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/profile/', {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Authorization': 'Token '+getCookie('iohk_token')
-        }
-      })
-          .then(resp => resp.json())
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/profile/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             if (data.error) {
               showMessage('error', data.error, false)
@@ -75,28 +76,9 @@ export default {
             }
           })
     },
-    async getSystemsData() {
-      await fetch(this.$store.state.backendUrl+'/api/v1/systems/systems_short/', {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Authorization': 'Token '+getCookie('iohk_token')
-        }
-      })
-          .then(resp => resp.json())
-          .then(data => {
-            if (data.error) {
-              showMessage('error', data.error, false)
-            } else {
-              this.systemsData = data.systems
-              this.systemLoads = false
-            }
-          })
-    },
     onLoad() {
       this.$refs.baseComponent.useLoader()
       this.getProfileData()
-      //this.getSystemsData()
     }
   },
   mounted() {

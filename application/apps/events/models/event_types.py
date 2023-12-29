@@ -12,6 +12,13 @@ class EventTypes(BaseTable):
         unique=True,
         verbose_name='Наименование типа мероприятия'
     )
+    name_plural = models.CharField(
+        max_length=100,
+        blank=False,
+        null=True,
+        default=None,
+        verbose_name='Наименование типа мероприятия'
+    )
 
     def __str__(self):
         return self.name

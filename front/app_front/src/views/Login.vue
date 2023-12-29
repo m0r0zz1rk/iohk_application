@@ -250,6 +250,7 @@
 import PreLoader from '../App.vue'
 import PasswordField from '../components/PasswordField.vue'
 import PhoneField from "../components/PhoneField.vue";
+import {apiRequest} from "../additional/functions/api_request.js";
 
 export default {
   name: 'Login',
@@ -283,21 +284,14 @@ export default {
       setTimeout(removeTableHeaderRow, 25)
     },
     async getStates() {
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/states/', {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'application/json;charset=UTF-8',
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка при получении списка государств, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/states/',
+          'GET',
+          false,
+          null,
+          false,
+          false
+      )
           .then(data => {
             this.states = data.states
           })
@@ -333,15 +327,14 @@ export default {
           data.oo_fullname = this.$refs.reg_oo_fullname.value
           data.oo_shortname = this.$refs.reg_oo_shortname.value
         }
-        await fetch(this.$store.state.backendUrl + '/api/v1/auth/registration/', {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': getCookie("csrftoken"),
-            'Content-Type': 'web_app/json',
-          },
-          body: JSON.stringify(data)
-        })
-            .then(resp => resp.json())
+        apiRequest(
+            this.$store.state.backendUrl + '/api/v1/auth/registration/',
+            'POST',
+            false,
+            data,
+            false,
+            false
+        )
             .then(data => {
               if (data.error) {
                 this.profileChangeError = data.error
@@ -387,16 +380,16 @@ export default {
         this.regPhoneStateText = 'Некорректный номер телефона'
         return false
       }
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/check_phone/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json'
-        },
-        body: JSON.stringify({
-          'phone': this.$refs.reg_phone.componentPhoneField
-        })
-      })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/check_phone/',
+          'POST',
+          false,
+          {
+            'phone': this.$refs.reg_phone.componentPhoneField
+          },
+          false,
+          true
+      )
           .then(resp => {
             if (resp.status === 200) {
               this.regPhoneValueState = 'Success'
@@ -408,17 +401,16 @@ export default {
           })
     },
     async checkEmailUnique() {
-      console.log(this.regPhoneField)
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/check_email/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json'
-        },
-        body: JSON.stringify({
-          'email': this.$refs.reg_email.value
-        })
-      })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/check_email/',
+          'POST',
+          false,
+          {
+            'email': this.$refs.reg_email.value
+          },
+          false,
+          true
+      )
           .then(resp => {
             if (resp.status === 200) {
               this.regEmailValueState = 'Success'
@@ -471,12 +463,6 @@ export default {
   width: 100vw;
   height: 100vh;
   -webkit-filter: blur(5px);
-}
-.seventy_five_width_and_center{
-  position: relative;
-  z-index: 5;
-  width: 75vw;
-  margin: 0 auto;
 }
 .half_width_and_center{
   position: relative;

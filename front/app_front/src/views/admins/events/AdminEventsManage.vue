@@ -459,8 +459,9 @@ import LkBase from "../../../components/LkBase.vue";
 import PaginationTable from "../../../components/PaginationTable.vue";
 import AdminEventsTable from "./AdminEventsTable.vue";
 import TinyMCE from "../../../components/TinyMCE.vue";
-import app_form_field_types from "../../../consts/app_form_field_types.js";
+import app_form_field_types from "../../../additional/consts/app_form_field_types.js";
 import EventStatus from "../../../components/badges/EventStatus.vue";
+import {apiRequest} from "../../../additional/functions/api_request.js";
 
 export default {
   name: 'AdminEventsManage',
@@ -517,47 +518,30 @@ export default {
     async init () {
       let url = new URL(window.location.href);
       if (url.searchParams.has('eventId')) {
-        await fetch(this.$store.state.backendUrl+'/api/v1/admins/event/'+url.searchParams.get('eventId')+'/', {
-          method: 'GET',
-          headers: {
-            'X-CSRFToken': getCookie("csrftoken"),
-            'Content-Type': 'web_app/json;charset=UTF-8',
-            'Authorization': 'Token '+getCookie('iohk_token')
-          },
-        })
-            .then(resp => {
-              if (resp.status === 200) {
-                return resp.json()
-              } else {
-                showMessage('error', 'Произошла ошибка при получении информации о мероприятии, повторите попытку позже')
-                return false
-              }
-            })
+        apiRequest(
+            this.$store.state.backendUrl+'/api/v1/admins/event/'+url.searchParams.get('eventId')+'/',
+            'GET',
+            true,
+            null,
+            false,
+            false
+        )
             .then(data => {
               this.selectedEvent = data
-              console.log(this.selectedEvent)
               this.selectedTab = ''
               this.getEventInformation()
             })
       }
     },
     async getForms() {
-      await fetch(this.$store.state.backendUrl+'/api/v1/admins/events_forms/', {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка при получении форм проведения мероприятия, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/events_forms/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             let forms = [{id: 0, name: ''}]
             data.map((form, id) => {
@@ -618,30 +602,14 @@ export default {
     async saveInformation() {
       this.changeInfo = true
       let url = this.$store.state.backendUrl+'/api/v1/admins/information_save/'+this.selectedEvent.object_id+'/'
-      await fetch (url,{
-        method: 'PATCH',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify({
-          'info': this.$refs.infoTinyMCE.editorText
-        })
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              this.changeInfo = false
-              if (resp.status === 401) {
-                showMessage('error', 'Пожалуйста, войдите в систему', false)
-                this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-                return false
-              }
-              showMessage('error', 'Произошла ошибка, повторите попытку позже')
-            }
-          })
+      apiRequest(
+          url,
+          'PATCH',
+          true,
+          {'info': this.$refs.infoTinyMCE.editorText},
+          false,
+          false
+      )
           .then(data => {
             if (data['error']) {
               showMessage('error', data['error'])
@@ -677,68 +645,42 @@ export default {
       }
     },
     async getEventInformation() {
-      await fetch(this.$store.state.backendUrl+'/api/v1/admins/information/?event='+this.selectedEvent.name, {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка при получении информации о мероприятии, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/information/?event='+this.selectedEvent.name,
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             this.Information = data[0]['info']
             this.selectedTab = 'information'
           })
     },
     async getSchedule() {
-      let url = this.$store.state.backendUrl+'/api/v1/admins/schedule/'+this.selectedEvent.object_id+'/'
-      await fetch(url, {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка при получении расписания, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/schedule/'+this.selectedEvent.object_id+'/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             this.eventSchedule = data
             changeTableView()
           })
     },
     async getAppsRequired() {
-      let url = this.$store.state.backendUrl+'/api/v1/admins/apps_required/'+this.selectedEvent.object_id+'/'
-      await fetch(url, {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/apps_required/'+this.selectedEvent.object_id+'/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             this.eventUserAppRequired = data['user_app_required']
             this.eventParticipantAppRequired = data['participant_app_required']
@@ -752,19 +694,18 @@ export default {
         this.eventParticipantAppRequired = value
         await this.getAppFields('participant_app')
       }
-      await fetch (this.$store.state.backendUrl+'/api/v1/admins/apps_required_edit/',{
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify({
-          'event_id': this.selectedEvent.object_id,
-          'type': type,
-          'value': value
-        })
-      })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/apps_required_edit/',
+          'POST',
+          true,
+          {
+            'event_id': this.selectedEvent.object_id,
+            'type': type,
+            'value': value
+          },
+          false,
+          true
+      )
           .then(resp => {
             if (resp.status === 401) {
               showMessage('error', 'Пожалуйста, войдите в систему', false)
@@ -776,23 +717,14 @@ export default {
           })
     },
     async getAppFields(type) {
-      let url = this.$store.state.backendUrl+'/api/v1/admins/app_fields/'+this.selectedEvent.object_id+'/'+type+'/'
-      await fetch(url, {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка при получении полей заявки, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/app_fields/'+this.selectedEvent.object_id+'/'+type+'/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             if (type === 'user_app') {
               this.eventUserAppFields = data
@@ -814,24 +746,14 @@ export default {
         data['name'] = this.$refs.eventParticipantAppFieldName.value
         data['type'] = this.eventParticipantAppFieldAddType
       }
-      await fetch (this.$store.state.backendUrl+'/api/v1/admins/app_field_new/',{
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify(data)
-      })
-          .then(resp => {
-            if (resp.status === 401) {
-              showMessage('error', 'Пожалуйста, войдите в систему', false)
-              this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-              return false
-            } else {
-              return resp.json()
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/app_field_new/',
+          'POST',
+          true,
+          data,
+          false,
+          false
+      )
           .then(data => {
             if (data['error']) {
               showMessage('error', data['error'])
@@ -860,24 +782,14 @@ export default {
         data['type'] = this.eventParticipantAppFieldEditType
         url += this.eventParticipantAppFieldEdit+'/'
       }
-      await fetch (url,{
-        method: 'PATCH',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Content-Type': 'web_app/json;charset=UTF-8',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify(data)
-      })
-          .then(resp => {
-            if (resp.status === 401) {
-              showMessage('error', 'Пожалуйста, войдите в систему', false)
-              this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-              return false
-            } else {
-              return resp.json()
-            }
-          })
+      apiRequest(
+          url,
+          'PATCH',
+          true,
+          data,
+          false,
+          false
+      )
           .then(data => {
             if (data['error']) {
               showMessage('error', data['error'])
@@ -893,23 +805,14 @@ export default {
     },
     async deleteAppField(field_id, user_app) {
       if (confirm('Вы уверены, что хотите удалить поле?')) {
-        await fetch (this.$store.state.backendUrl+'/api/v1/admins/app_field_delete/'+field_id+'/',{
-          method: 'DELETE',
-          headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'web_app/json;charset=UTF-8',
-            'Authorization': 'Token '+getCookie('iohk_token')
-          }
-        })
-            .then(resp => {
-              if (resp.status === 401) {
-                showMessage('error', 'Пожалуйста, войдите в систему', false)
-                this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-                return false
-              } else {
-                return resp.json()
-              }
-            })
+        apiRequest(
+            this.$store.state.backendUrl+'/api/v1/admins/app_field_delete/'+field_id+'/',
+            'DELETE',
+            true,
+            null,
+            false,
+            false
+        )
             .then(data => {
               if (data['error']) {
                 showMessage('error', data['error'])

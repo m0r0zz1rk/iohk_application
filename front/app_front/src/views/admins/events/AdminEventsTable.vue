@@ -30,6 +30,7 @@
 
 <script>
 import PaginationTable from "../../../components/PaginationTable.vue";
+import {apiRequest} from "../../../additional/functions/api_request.js";
 
 export default {
   name: 'AdminEventsTable',
@@ -72,42 +73,26 @@ export default {
   methods: {
     async getEventTypesAndCats() {
       let that = this
-      await fetch(this.$store.state.backendUrl + '/api/v1/admins/events_types/', {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'application/json;charset=UTF-8',
-          'Authorization': 'Token ' + getCookie('iohk_token')
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка при получении типов мероприятий, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl + '/api/v1/admins/events_types/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             data.map((type, id) => {
               this.types.push({id: id + 1, name: type.name})
             })
-            fetch(this.$store.state.backendUrl + '/api/v1/admins/participant_categories/', {
-              method: 'GET',
-              headers: {
-                'X-CSRFToken': getCookie("csrftoken"),
-                'Content-Type': 'application/json;charset=UTF-8',
-                'Authorization': 'Token ' + getCookie('iohk_token')
-              },
-            })
-                .then(resp => {
-                  if (resp.status === 200) {
-                    return resp.json()
-                  } else {
-                    showMessage('error', 'Произошла ошибка при получении категорий участников, повторите попытку позже')
-                    return false
-                  }
-                })
+            apiRequest(
+                this.$store.state.backendUrl + '/api/v1/admins/participant_categories/',
+                'GET',
+                true,
+                null,
+                false,
+                false
+            )
                 .then(data => {
                   data.map((category, id) => {
                     that.categories.push({id: id + 1, name: category.name})

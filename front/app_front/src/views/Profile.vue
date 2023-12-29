@@ -18,6 +18,7 @@ import LkBase from "../components/LkBase.vue";
 import PasswordField from "../components/PasswordField.vue";
 import PhoneField from "../components/PhoneField.vue";
 import ProfileForm from "../components/ProfileForm.vue";
+import {apiRequest} from "../additional/functions/api_request.js";
 export default {
   components: {
     ProfileForm,
@@ -37,14 +38,14 @@ export default {
   },
   methods: {
     async getProfileData() {
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/profile/', {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Authorization': 'Token '+getCookie('iohk_token')
-        }
-      })
-          .then(resp => resp.json())
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/profile/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             if (data.error) {
               showMessage('error', data.error, false)
@@ -90,34 +91,32 @@ export default {
       }
       this.$refs.baseComponent.useLoader()
       let that = this
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/check_change_phone/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify({
-          'phone': this.$refs.profile_form.$refs.profile_phone.componentPhoneField
-        })
-      })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/check_change_phone/',
+          'POST',
+          true,
+          {
+            'phone': this.$refs.profile_form.$refs.profile_phone.componentPhoneField
+          },
+          false,
+          true
+      )
           .then(async function(response) {
             if (response.status !== 200) {
               showMessage('error', 'Указанный номер телефона уже использован')
               that.$refs.baseComponent.useLoader()
               return false
             } else {
-              await fetch(that.$store.state.backendUrl+'/api/v1/auth/check_change_email/', {
-                method: 'POST',
-                headers: {
-                  'X-CSRFToken': getCookie("csrftoken"),
-                  'Content-Type': 'web_app/json',
-                  'Authorization': 'Token '+getCookie('iohk_token')
-                },
-                body: JSON.stringify({
-                  'email': that.$refs.profile_form.profileEmailField
-                })
-              })
+              apiRequest(
+                  that.$store.state.backendUrl+'/api/v1/auth/check_change_email/',
+                  'POST',
+                  true,
+                  {
+                    'email': that.$refs.profile_form.profileEmailField
+                  },
+                  false,
+                  true
+              )
                   .then(async function(response) {
                     if (response.status !== 200) {
                       showMessage('error', 'Указанный email уже использован')
@@ -130,23 +129,14 @@ export default {
           })
     },
     async profileChange(data) {
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/change_profile/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify(data)
-      })
-          .then(response => {
-            if (response.status === 200) {
-              return response.json()
-            } else {
-              showMessage('error', 'Произошла ошибка, повторите попытку позже')
-              this.$refs.baseComponent.useLoader()
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/change_profile/',
+          'POST',
+          true,
+          data,
+          false,
+          false
+      )
           .then(data => {
             if (data['error']) {
               showMessage('error', data['error'])
@@ -178,25 +168,16 @@ export default {
       let password = this.$refs.profile_form.$refs.password1.passwordStr
       this.$refs.profile_form.$refs.passwordPopover.close()
       this.$refs.baseComponent.useLoader()
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/change_password/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify({
-          'password': password,
-        })
-      })
-          .then(response => {
-            if (response.status === 200) {
-              return response.json()
-            } else {
-              showMessage('error', 'Произошла ошибка, повторите попытку позже')
-              this.$refs.baseComponent.useLoader()
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/change_password/',
+          'POST',
+          true,
+          {
+            'password': password,
+          },
+          false,
+          false
+      )
           .then(data => {
             if (data['error']) {
               showMessage('error', data['error'])

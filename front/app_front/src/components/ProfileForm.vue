@@ -204,6 +204,7 @@
 
 import PhoneField from "./PhoneField.vue";
 import PasswordField from "./PasswordField.vue";
+import {apiRequest} from "../additional/functions/api_request.js";
 
 export default {
   name: 'ProfileForm',
@@ -222,21 +223,14 @@ export default {
   },
   methods: {
     async getStates() {
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/states/', {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'application/json;charset=UTF-8',
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка при получении списка государств, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/states/',
+          'GET',
+          false,
+          null,
+          false,
+          false
+      )
           .then(data => {
             this.states = data.states
           })

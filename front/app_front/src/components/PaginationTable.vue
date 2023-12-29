@@ -436,7 +436,8 @@ import SexBadge from "./badges/SexBadge.vue";
 import PhoneField from "./PhoneField.vue";
 import JournalEventResultBadge from "./badges/JournalEventResultBadge.vue";
 import EventStatus from "./badges/EventStatus.vue";
-import {event_status_db_name, event_status_display_name} from "../consts/event_status_display_name.js";
+import {event_status_db_name, event_status_display_name} from "../additional/functions/event_status_display_name.js";
+import {apiRequest} from "../additional/functions/api_request.js";
 
 export default {
   name: 'PaginationTable',
@@ -523,26 +524,14 @@ export default {
       if (this.filterString.length > 0) {
         url += this.filterString
       }
-      await fetch(url, {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Authorization': 'Token '+getCookie('iohk_token')
-        }
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              if (resp.status === 401) {
-                showMessage('error', 'Пожалуйста, войдите в систему', false)
-                this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-                return false
-              }
-              this.recs = []
-              this.tableBusy = false
-            }
-          })
+      apiRequest(
+          url,
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
           .then(data => {
             if (data.error) {
               showMessage('error', data.error, false)
@@ -655,33 +644,23 @@ export default {
         return false
       }
       this.tableBusy = true
-      await fetch(this.$store.state.backendUrl+this.recAddURL, {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify(data)
-      })
-          .then(resp => {
-            if (resp.status === 401) {
-              showMessage('error', 'Пожалуйста, войдите в систему', false)
-              this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-              return false
-            } else {
-              return resp.json()
-            }
-          })
-          .then(data => {
-            if (data['error']) {
-              showMessage('error', data['error'])
-            } else {
-              showMessage('success', data['success'])
-              this.getRecs((this.pageNumber-1)*this.recCount, this.recCount)
-            }
-            this.tableBusy = false
-          })
+      apiRequest(
+          this.$store.state.backendUrl+this.recAddURL,
+          'POST',
+          true,
+          data,
+          false,
+          false
+      )
+        .then(data => {
+              if (data['error']) {
+                showMessage('error', data['error'])
+              } else {
+                showMessage('success', data['success'])
+                this.getRecs((this.pageNumber-1)*this.recCount, this.recCount)
+              }
+              this.tableBusy = false
+            })
     },
     async editRec() {
       let data = {}
@@ -756,28 +735,17 @@ export default {
         showMessage('error', 'Заполните обязательные поля формы')
         return false
       }
-      console.log(data)
       this.tableBusy = true
       let obj_id = this.editRow
-      await fetch(this.$store.state.backendUrl+this.recEditURL+obj_id+'/', {
-        method: 'PATCH',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify(data)
-      })
-          .then(resp => {
-            if (resp.status === 401) {
-              showMessage('error', 'Пожалуйста, войдите в систему', false)
-              this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-              return false
-            } else {
-              return resp.json()
-            }
-          })
-          .then(data => {
+      apiRequest(
+          this.$store.state.backendUrl+this.recEditURL+obj_id+'/',
+          'PATCH',
+          true,
+          data,
+          false,
+          false
+      )
+        .then(data => {
             if (data['error']) {
               showMessage('error', data['error'])
             } else {
@@ -791,27 +759,14 @@ export default {
     async delRec(object_id) {
       if (confirm('Вы уверены, что хотите выполнить удаление?')) {
         this.tableBusy = true
-        await fetch(this.$store.state.backendUrl+this.recDeleteURL+object_id+'/', {
-          method: 'DELETE',
-          headers: {
-            'X-CSRFToken': getCookie("csrftoken"),
-            'Content-Type': 'web_app/json',
-            'Authorization': 'Token '+getCookie('iohk_token')
-          },
-        })
-            .then(resp => {
-              if (resp.status === 200) {
-                return resp.json()
-              } else {
-                if (resp.status === 401) {
-                  showMessage('error', 'Пожалуйста, войдите в систему', false)
-                  this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
-                  return false
-                }
-                showMessage('error', 'Произошла ошибка, повторите попытку позже')
-                this.tableBusy = false
-              }
-            })
+        apiRequest(
+            this.$store.state.backendUrl+this.recDeleteURL+object_id+'/',
+            'DELETE',
+            true,
+            null,
+            false,
+            false
+        )
             .then(data => {
               if (data['error']) {
                 showMessage('error', data['error'])

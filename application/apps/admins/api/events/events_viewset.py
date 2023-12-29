@@ -209,7 +209,8 @@ class EventsViewSet(viewsets.ModelViewSet):
                 for key, value in serialize.data.items():
                     if key not in ['app_date_range', 'date_range', 'categories']:
                         if key == 'event_type':
-                            event_data['event_type_id'] = EventsTypesUtils.get_event_type_object_id_by_name(value)
+                            print(value)
+                            event_data['event_type'] = EventsTypesUtils.get_event_type_object_id_by_name(value)
                         else:
                             event_data[key] = value
                 save_serialize = EventModelSerializer(event, data=event_data, partial=True)

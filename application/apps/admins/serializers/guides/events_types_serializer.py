@@ -8,7 +8,7 @@ class EventsTypeSerializer(serializers.ModelSerializer):
     """Сериализация типа мероприятий"""
     class Meta:
         model = EventTypes
-        fields = ('object_id', 'name')
+        fields = ('object_id', 'name', 'name_plural')
 
 
 class EventsTypePaginationSerializer(PaginationSerializer):
@@ -20,4 +20,4 @@ class EventsTypesSaveSerializer(serializers.ModelSerializer):
     """Сериализация данных при добавлении нового типа мероприятия"""
     class Meta:
         model = EventTypes
-        fields = ('name',)
+        fields = ('name', 'name_plural')

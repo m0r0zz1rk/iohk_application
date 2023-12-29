@@ -52,6 +52,7 @@
 import PaginationTable from "../../components/PaginationTable.vue";
 import LkBase from "../../components/LkBase.vue";
 import ProfileForm from "../../components/ProfileForm.vue";
+import {apiRequest} from "../../additional/functions/api_request.js";
 
 export default {
   name: 'Users',
@@ -101,21 +102,14 @@ export default {
   },
   methods: {
     async getStates() {
-      await fetch(this.$store.state.backendUrl+'/api/v1/auth/states/', {
-        method: 'GET',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'application/json;charset=UTF-8',
-        },
-      })
-          .then(resp => {
-            if (resp.status === 200) {
-              return resp.json()
-            } else {
-              showMessage('error', 'Произошла ошибка при получении списка государств, повторите попытку позже')
-              return false
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/auth/states/',
+          'GET',
+          false,
+          null,
+          false,
+          false
+      )
           .then(data => {
             this.states=[{id: 0, name: ''}]
             data.states.map((state, id) => {
@@ -258,36 +252,34 @@ export default {
       }
       this.$refs.baseComponent.useLoader()
       let that = this
-      await fetch(this.$store.state.backendUrl+'/api/v1/admins/user_check_phone/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify({
-          'phone': this.$refs.profile_form.$refs.profile_phone.componentPhoneField,
-          'object_id': this.selectedProfile.object_id
-        })
-      })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/user_check_phone/',
+          'POST',
+          true,
+          {
+            'phone': this.$refs.profile_form.$refs.profile_phone.componentPhoneField,
+            'object_id': this.selectedProfile.object_id
+          },
+          false,
+          true
+      )
           .then(async function(response) {
             if (response.status !== 200) {
               that.profileChangeError = 'Указанный номер телефона уже использован'
               that.$refs.baseComponent.useLoader()
               return false
             } else {
-              await fetch(that.$store.state.backendUrl+'/api/v1/admins/user_check_email/', {
-                method: 'POST',
-                headers: {
-                  'X-CSRFToken': getCookie("csrftoken"),
-                  'Content-Type': 'web_app/json',
-                  'Authorization': 'Token '+getCookie('iohk_token')
-                },
-                body: JSON.stringify({
-                  'email': that.$refs.profile_form.$refs.profile_email.value,
-                  'object_id': that.selectedProfile.object_id
-                })
-              })
+              apiRequest(
+                  that.$store.state.backendUrl+'/api/v1/admins/user_check_email/',
+                  'POST',
+                  true,
+                  {
+                    'email': that.$refs.profile_form.$refs.profile_email.value,
+                    'object_id': that.selectedProfile.object_id
+                  },
+                  false,
+                  true
+              )
                   .then(async function(response) {
                     if (response.status !== 200) {
                       that.profileChangeError = 'Указанный email уже использован'
@@ -300,23 +292,14 @@ export default {
           })
     },
     async profileChange(data) {
-      await fetch(this.$store.state.backendUrl+'/api/v1/admins/user_edit/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify(data)
-      })
-          .then(response => {
-            if (response.status === 200) {
-              return response.json()
-            } else {
-              showMessage('error', 'Произошла ошибка, повторите попытку позже')
-              this.$refs.baseComponent.useLoader()
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/user_edit/',
+          'POST',
+          true,
+          data,
+          false,
+          false
+      )
           .then(data => {
             if (data['error']) {
               showMessage('error', data['error'])
@@ -352,26 +335,17 @@ export default {
       let password = this.$refs.profile_form.$refs.password1.passwordStr
       this.$refs.profile_form.$refs.passwordPopover.close()
       this.$refs.baseComponent.useLoader()
-      await fetch(this.$store.state.backendUrl+'/api/v1/admins/user_change_password/', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie("csrftoken"),
-          'Content-Type': 'web_app/json',
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: JSON.stringify({
-          'password': password,
-          'object_id': this.selectedProfile.object_id
-        })
-      })
-          .then(response => {
-            if (response.status === 200) {
-              return response.json()
-            } else {
-              showMessage('error', 'Произошла ошибка, повторите попытку позже')
-              this.$refs.baseComponent.useLoader()
-            }
-          })
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/user_change_password/',
+          'POST',
+          true,
+          {
+            'password': password,
+            'object_id': this.selectedProfile.object_id
+          },
+          false,
+          false
+      )
           .then(data => {
             if (data['error']) {
               showMessage('error', data['error'])

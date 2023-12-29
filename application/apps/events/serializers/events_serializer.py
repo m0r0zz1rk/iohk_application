@@ -50,7 +50,7 @@ class EventsPaginationSerializer(PaginationSerializer):
 
 class EventGetSerializer(serializers.Serializer):
     """Сериализация запроса для получения мероприятия"""
-    event_id=serializers.UUIDField(
+    event_id = serializers.UUIDField(
         allow_null=False,
         label='Object_id мероприятия'
     )

@@ -25,8 +25,8 @@
 <script>
 import PaginationTable from "../../components/PaginationTable.vue";
 import LkBase from "../../components/LkBase.vue";
-import journalEventResult from "../../consts/journal_event_results.js";
-import journalRecTypes from "../../consts/journal_rec_types.js";
+import journalEventResult from "../../additional/consts/journal_event_results.js";
+import journalRecTypes from "../../additional/consts/journal_rec_types.js";
 
 export default {
   name: 'Journal',

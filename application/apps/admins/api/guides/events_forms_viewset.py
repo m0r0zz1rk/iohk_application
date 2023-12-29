@@ -162,7 +162,7 @@ class EventsFormsViewSet(viewsets.ModelViewSet):
                 SUCCESS,
                 f'Удалена форма проведения мероприятий: {name}'
             )
-            return self.ru.ok_response('Форма проведения мероприятия успешно удален')
+            return self.ru.ok_response('Форма проведения мероприятия успешно удалена')
         except Exception:
             error = ExceptionHandling.get_traceback()
             self.journal.write(

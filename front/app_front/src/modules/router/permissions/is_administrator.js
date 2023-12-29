@@ -1,4 +1,5 @@
 import store from "../../store/index.js";
+import {apiRequest} from "../../../additional/functions/api_request.js";
 
 const isAdministrator = (to, from, next) => {
     fetch(store.state.backendUrl+'/api/v1/auth/check_admin/', {

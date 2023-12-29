@@ -29,6 +29,7 @@
 
 <script>
 import Editor from '@tinymce/tinymce-vue'
+import {apiRequest} from "../additional/functions/api_request.js";
 
 export default {
   name: 'TinyMCE',
@@ -52,15 +53,14 @@ export default {
       let formRequest = new FormData()
       formRequest.append('file', blobInfo.blob(), blobInfo.filename())
       formRequest.append('name', this.additionalData['name'])
-      await fetch (this.$store.state.backendUrl+'/api/v1/commons/tinymce_image/', {
-        method: 'PUT',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Authorization': 'Token '+getCookie('iohk_token')
-        },
-        body: formRequest
-      })
-          .then(resp => resp.json())
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/commons/tinymce_image/',
+          'PUT',
+          true,
+          formRequest,
+          true,
+          false
+      )
           .then(data => {
             if (data.location) {
               success(this.$store.state.backendUrl+data.location)
