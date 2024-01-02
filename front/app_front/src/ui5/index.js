@@ -34,6 +34,8 @@ import "@ui5/webcomponents/dist/TableColumn.js"
 import "@ui5/webcomponents/dist/TableRow.js"
 import "@ui5/webcomponents/dist/TableCell.js"
 import "@ui5/webcomponents/dist/TextArea.js"
+import "@ui5/webcomponents/dist/Toolbar.js"
+import "@ui5/webcomponents/dist/ToolbarButton.js"
 
 import "@ui5/webcomponents-fiori/dist/Assets.js"
 import "@ui5/webcomponents-fiori/dist/Bar.js"

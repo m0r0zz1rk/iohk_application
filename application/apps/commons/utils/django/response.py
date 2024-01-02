@@ -30,6 +30,11 @@ class ResponseUtils:
         )
 
     @staticmethod
+    def no_content_response() -> Response:
+        """Генерация ответа со статусом 204 - No Content"""
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @staticmethod
     def ok_response_dict(d: dict) -> Response:
         """Генерация ответа с кодом 200 и телом полученного словаря"""
         return Response(

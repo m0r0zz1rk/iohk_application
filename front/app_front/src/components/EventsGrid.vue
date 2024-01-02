@@ -34,7 +34,7 @@
         <div class="card-center-button-div">
           <ui5-button style="margin: 0 auto;"
                       icon="business-card"
-                      @click="showDetailsFunction(event.object_id)">Подробнее</ui5-button>
+                      @click="e => showDetailsFunction(e, event.object_id)">Подробнее</ui5-button>
         </div>
       </ui5-card>
     </div>
@@ -57,7 +57,7 @@ export default {
   padding-left: 10px;
   display: grid;
   width: 97%;
-  grid-template-columns: repeat(2, 3fr);
+  grid-template-columns: repeat(3, 3fr);
   gap: 1rem;
 }
 .content,

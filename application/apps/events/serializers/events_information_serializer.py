@@ -8,7 +8,7 @@ class EventsInformationSerializer(serializers.ModelSerializer):
     """Сериализация информационных сообщений о мероприятиях"""
     class Meta:
         model = EventsInformation
-        fields = '__all__'
+        fields = ['info', ]
 
 
 class EventsInformationSaveSerializer(serializers.Serializer):

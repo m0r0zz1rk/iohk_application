@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from apps.applications.models import AppFieldTypes, AppFields, FieldAvailableValues
+from apps.applications.models import AppFieldTypes, AppFields, FieldAvailableValues, Apps, AppFormFields
 
 
 @admin.register(AppFieldTypes)
 class AppFieldTypesAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('alias', 'type')
 
 
 @admin.register(AppFields)
@@ -16,3 +16,18 @@ class AppFieldsAdmin(admin.ModelAdmin):
 @admin.register(FieldAvailableValues)
 class FieldAvailableValuesAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(Apps)
+class AppsAdmin(admin.ModelAdmin):
+    list_display = ('profile', 'event', 'status')
+
+
+@admin.register(AppFormFields)
+class AppFormFieldsAdmin(admin.ModelAdmin):
+    list_display = ('app', 'field_name', 'user_form', 'value')
+
+    def field_name(self, obj):
+        return obj.field.name
+
+    field_name.short_description = 'Поле'
