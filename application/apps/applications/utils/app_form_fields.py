@@ -61,3 +61,21 @@ class AppFormFieldsUtils:
             return form_fields
         except Exception:
             return None
+
+    @staticmethod
+    def add_new_form_field(app_field):
+        """Добавление во все заявки пользователей на мероприятие нового поля формы"""
+        try:
+            apps_model = apps.get_model('applications', 'Apps')
+            qs_apps = apps_model.objects.filter(event_id=app_field.event_id)
+            if qs_apps.count() > 0:
+                for app in qs_apps:
+                    data = {
+                        'app_id': app.object_id,
+                        'field_id': app_field.object_id,
+                        'user_form': app_field.user_app,
+                        'value': ''
+                    }
+                    AppFormFields.objects.create(**data)
+        except Exception:
+            pass

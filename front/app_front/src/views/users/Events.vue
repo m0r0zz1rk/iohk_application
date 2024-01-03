@@ -43,7 +43,7 @@
         <ui5-tab text="Информационное сообщение" :selected="selectedEvent.tab === 'info'" />
         <ui5-tab text="Расписание" :selected="selectedEvent.tab === 'schedule'" />
       </ui5-tabcontainer><br/><br/>
-      <div style="width: 80vw; height: 80vh; overflow-x: auto">
+      <div style="width: 80vw; height: 65vh; overflow-x: auto">
         <div v-if="selectedEvent.tab === 'info'" v-html="selectedEvent.info" />
         <div v-if="selectedEvent.tab === 'schedule'">
           <PaginationTable v-bind:recsURL="'/api/v1/users/event_schedule/'+this.selectedEvent.id+'/'"
@@ -54,7 +54,7 @@
                            v-bind:colCount="8"
                            v-bind:addButton="false"
                            v-bind:tableColumns="scheduleTableColumns"
-                           v-bind:dataTableHeight="60"
+                           v-bind:dataTableHeight="55"
           />
         </div>
       </div>

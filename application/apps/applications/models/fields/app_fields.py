@@ -1,4 +1,7 @@
+from django.apps import apps
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from apps.applications.models.fields.app_field_types import AppFieldTypes
 from apps.commons.models import BaseTable
@@ -41,3 +44,21 @@ class AppFields(BaseTable):
     class Meta:
         verbose_name = 'Поле формы заявки пользователей на мероприятие'
         verbose_name_plural = 'Поля формы заявки пользователей на мероприятия'
+
+
+@receiver(post_save, sender=AppFields)
+def create_app_form_fields(instance, created, **kwargs):
+    """Добавление записей в заполненные поля заявок пользователей при добавлении поля в форму заявки"""
+    if created:
+        apps_model = apps.get_model('applications', 'Apps')
+        app_form_fields_model = apps.get_model('applications', 'AppFormFields')
+        qs_apps = apps_model.objects.filter(event_id=instance.event_id)
+        if qs_apps.count() > 0:
+            for app in qs_apps:
+                data = {
+                    'app_id': app.object_id,
+                    'field_id': instance.object_id,
+                    'user_form': instance.user_app,
+                    'value': ''
+                }
+                app_form_fields_model.objects.create(**data)

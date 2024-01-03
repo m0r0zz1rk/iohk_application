@@ -21,7 +21,10 @@
         </tr>
         <tr>
           <td style="text-align: right; padding-right: 30px"><ui5-label show-colon>Дата последнего обновления заявки</ui5-label></td>
-          <td style="text-align: center;"><b>{{appInfo.date_update}}</b></td>
+          <td style="text-align: center;">
+            <b v-if="appInfo.date_update !== null">{{appInfo.date_update}}</b>
+            <b v-if="appInfo.date_update === null">-</b>
+          </td>
         </tr>
         <tr>
           <td style="text-align: right; padding-right: 30px"><ui5-label show-colon>Мероприятие</ui5-label></td>
@@ -35,7 +38,10 @@
         </tr>
         <tr>
           <td style="text-align: right; padding-right: 30px"><ui5-label show-colon>Сообщение по заявке</ui5-label></td>
-          <td style="text-align: center;">{{appInfo.message}}</td>
+          <td style="text-align: center;">
+            <b v-if="appInfo.message.length > 0">{{appInfo.message}}</b>
+            <b v-if="appInfo.message.length === 0">-</b>
+          </td>
         </tr>
       </table>
     </div>
@@ -45,8 +51,34 @@
           <td style="text-align: right; width: 25%; padding-right: 30px"><ui5-label show-colon>{{ field.name }}</ui5-label></td>
           <td style="text-align: center;">
             <div v-if="InputTypes.includes(field.type)">
-              <ui5-input />
+              <ui5-input v-if="field.type.includes('profile_')"
+                         :ref="'app_user_'+field.object_id"
+                         :value="getProfileInfoByField(field.type)"
+                         readonly />
+              <ui5-input v-if="!(field.type.includes('profile_'))"
+                         :ref="'app_user_'+field.object_id"
+                         :type="field.type.charAt(0).toUpperCase()+field.type.slice(1)"
+                         :value="field.value" />
             </div>
+            <ui5-date-picker v-if="field.type === 'date'"
+                             formatPattern="dd.MM.YYYY"
+                             :ref="'app_user_'+field.object_id"
+                             :value="field.value" />
+            <ui5-daterange-picker v-if="field.type === 'date_range'"
+                                  formatPattern="dd.MM.YYYY"
+                                  :ref="'app_user_'+field.object_id"
+                                  :value = "field.value" />
+            <ui5-select v-if="field.type === 'select'" :ref="'app_user_'+field.object_id">
+              <ui5-option v-for="option in field.options" :selected="field.value === option">{{option}}</ui5-option>
+            </ui5-select>
+            <ui5-multi-combobox v-if="field.type === 'multiple'" :ref="'app_user_'+field.object_id">
+              <ui5-mcb-item v-for="option in field.options"
+                            :text="option"
+                            :selected="field.value.split(',').includes(option)" />
+            </ui5-multi-combobox>
+            <PhoneField v-if="field.type === 'phone'"
+                        v-bind:phone-value="field.value"
+                        :ref="'app_user_'+field.object_id"/>
           </td>
         </tr>
       </table>
@@ -59,10 +91,11 @@
 import {apiRequest} from "../additional/functions/api_request.js";
 import AppStatus from "./badges/AppStatus.vue";
 import InputFormFieldTypes from "../additional/consts/html_app_form_field_types.js"
+import PhoneField from "./PhoneField.vue";
 
 export default {
   name: 'AppInformation',
-  components: {AppStatus, InputFormFieldTypes},
+  components: {PhoneField, AppStatus, InputFormFieldTypes},
   props: {
     eventId: {type: String},
     lkUser: {type: Boolean}
@@ -83,9 +116,6 @@ export default {
     }
   },
   methods: {
-    InputFormFieldTypes() {
-      return InputFormFieldTypes
-    },
     changeTab(index) {
       switch (index) {
         case 0:
@@ -128,7 +158,6 @@ export default {
               showMessage('error', data.error, false)
             } else {
               this.profileData = data
-              console.log(this.profileData)
             }
           })
     },
@@ -143,13 +172,34 @@ export default {
       )
           .then(data => {
             this.userAppFields = data['success']
-            console.log(this.userAppFields)
           })
+    },
+    getProfileInfoByField(field) {
+      if (field !== 'profile_fio') {
+        let arr = field.split('_')
+        let prof_info = ''
+        if (arr.length === 3) {
+          prof_info = arr[1]+'_'+arr[2]
+        } else {
+          prof_info = arr[1]
+        }
+        if (Object.keys(this.profileData).includes(prof_info)) {
+          return this.profileData[prof_info]
+        }
+      }
+      let fio = ''
+      if ((Object.keys(this.profileData).includes('surname')) &&
+          (Object.keys(this.profileData).includes('name'))) {
+          fio = this.profileData.surname+' '+this.profileData.name
+      }
+      if ((Object.keys(this.profileData).includes('patronymic'))) {
+        fio += ' '+this.profileData.patronymic
+      }
+      return fio
     }
   },
   mounted() {
     this.getAppInfo()
-    console.log(InputFormFieldTypes)
     if (this.lkUser) {
       this.getProfileInfo()
     }
@@ -164,10 +214,11 @@ export default {
     width: 100%;
     justify-content: center;
     align-content: center;
-    overflow: auto;
   }
   .info-app-div {
     width: 80%;
+    height: 65vh;
+    overflow: auto;
     margin: 0 auto;
   }
 </style>

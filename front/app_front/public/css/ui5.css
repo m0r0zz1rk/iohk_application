@@ -41,6 +41,11 @@ ui5-date-picker {
     text-align: center;
 }
 
+ui5-daterange-picker {
+    width: 100%;
+    text-align: center;
+}
+
 ui5-step-input {
     text-align: center;
 }

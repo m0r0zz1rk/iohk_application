@@ -1,5 +1,5 @@
 <template>
-  <ui5-input type="Text" v-model="componentPhoneField"
+  <ui5-input type="Text" v-model="componentPhoneField"  placeholder="+7 (###) ###-##-##"
              :value-state="phoneValueState" maxlength="18"
              @input = "e => checkPhoneLength(e)"
              @change="changePhoneAction && changePhoneAction()" required>
@@ -15,10 +15,11 @@ export default {
   name: 'PhoneField',
   data() {
     return {
-      componentPhoneField: ''
+      componentPhoneField: this.phoneValue || ''
     }
   },
   props: {
+    phoneValue: {type: String},
     phoneValueState: {type: String},
     phoneStateText: {type: String},
     changePhoneAction: {type: Function}
