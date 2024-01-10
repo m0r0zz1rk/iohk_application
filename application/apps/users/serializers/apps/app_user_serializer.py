@@ -12,7 +12,7 @@ class SelectFieldOptionSerializer(serializers.Serializer):
 
 class AppUserSerializer(serializers.Serializer):
     """Сериализация заполненного поля заявки пользователя"""
-    id = serializers.UUIDField(
+    object_id = serializers.UUIDField(
         allow_null=False,
         label='ID заполненного поля'
     )

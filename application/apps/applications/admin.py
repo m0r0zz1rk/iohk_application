@@ -25,7 +25,7 @@ class AppsAdmin(admin.ModelAdmin):
 
 @admin.register(AppFormFields)
 class AppFormFieldsAdmin(admin.ModelAdmin):
-    list_display = ('app', 'field_name', 'user_form', 'value')
+    list_display = ('app', 'field_name', 'value')
 
     def field_name(self, obj):
         return obj.field.name

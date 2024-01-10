@@ -5,14 +5,16 @@ from rest_framework.permissions import IsAuthenticated
 from apps.applications.utils.app_form_fields import AppFormFieldsUtils
 from apps.applications.utils.apps import AppsUtils
 from apps.authen.utils.profile import ProfileUtils
-from apps.commons.consts.journals.journal_event_results import ERROR
+from apps.commons.consts.apps.app_statuses import CREATED
+from apps.commons.consts.journals.journal_event_results import ERROR, SUCCESS
 from apps.commons.consts.journals.journal_rec_types import APPLICATIONS
 from apps.commons.permissions.is_users import IsUsers
 from apps.commons.utils.django.exception import ExceptionHandling
 from apps.commons.utils.django.response import ResponseUtils
 from apps.journals.writer.journal_writer import JournalWriter
-from apps.users.serializers.app_info_serializer import AppInfoSerializer
-from apps.users.serializers.app_user_serializer import AppUserSerializer
+from apps.users.serializers.apps.app_info_serializer import AppInfoSerializer
+from apps.users.serializers.apps.app_serializer import AppSaveSerializer, AppChangeStatusSerializer
+from apps.users.serializers.apps.app_user_serializer import AppUserSerializer
 
 
 class AppsViewSet(viewsets.ViewSet):
@@ -20,6 +22,7 @@ class AppsViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, IsUsers]
     journal = JournalWriter(APPLICATIONS)
     ru = ResponseUtils()
+    pu = ProfileUtils()
 
     @swagger_auto_schema(
         tags=['Заявки (ЛК пользователя)'],
@@ -83,15 +86,15 @@ class AppsViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         tags=['Заявки (ЛК пользователя)'],
-        operation_description="Получение списка заполненных полей заявки пользователя",
+        operation_description="Получение списка заполненных полей заявки",
         responses={
             '400': 'Ошибка при получении списка. Повторите попытку позже',
             '401': 'Пользователь не авторизован',
             '200': AppUserSerializer(many=True)
         }
     )
-    def get_user_app_fields(self, request, *args, **kwargs):
-        """Получение списка заполненных полей заявки пользователя"""
+    def get_app_fields(self, request, *args, **kwargs):
+        """Получение списка заполненных полей заявки"""
         try:
             profile = ProfileUtils.get_profile_by_user_id(request.user.id)
             form_fields = AppFormFieldsUtils.get_user_form_fields_for_app(
@@ -116,5 +119,110 @@ class AppsViewSet(viewsets.ViewSet):
                 f'{ExceptionHandling.get_traceback()}'
             )
             return self.ru.bad_request_response(
-                f'ООшибка при получении списка. Повторите попытку позже'
+                f'Ошибка при получении списка. Повторите попытку позже'
             )
+
+    @swagger_auto_schema(
+        tags=['Заявки (ЛК пользователя)'],
+        request_body=AppChangeStatusSerializer,
+        operation_description="Изменение статуса заявки",
+        responses={
+            '400': 'Ошибка при изменении. Повторите попытку позже',
+            '401': 'Пользователь не авторизован',
+            '204': 'Заявка не обнаружена',
+            '200': 'Статус заявки успешно изменен'
+        }
+    )
+    def app_status_change(self, request, *args, **kwargs):
+        """Изменение статуса заявки"""
+        try:
+            serialize = AppChangeStatusSerializer(data=request.data)
+            if serialize.is_valid(raise_exception=True):
+                app = AppsUtils.get_app_by_user_and_event_id(
+                    request.user.id,
+                    serialize.data['event_id']
+                )
+                AppsUtils.change_app_status(
+                    app.object_id,
+                    serialize.data['status']
+                )
+                self.journal.write(
+                    self.pu.get_display_name('django_user_id', request.user.id),
+                    SUCCESS,
+                    f'Статус заявки "{app}" успешно изменен'
+                )
+                return self.ru.ok_response_no_data()
+            else:
+                self.journal.write(
+                    'Система',
+                    ERROR,
+                    f'Запрос на изменение статуса не прошел сериализацию'
+                )
+                return self.ru.sorry_try_again_response()
+        except Exception:
+            self.journal.write(
+                'Система',
+                ERROR,
+                f'Ошибка при изменении статуса заявки: '
+                f'{ExceptionHandling.get_traceback()}'
+            )
+            return self.ru.bad_request_response(
+                f'Ошибка при изменении статуса заявки. Повторите попытку позже'
+            )
+
+    @swagger_auto_schema(
+        tags=['Заявки (ЛК пользователя)'],
+        request_body=AppSaveSerializer,
+        operation_description="Сохранение заявки",
+        responses={
+            '400': 'Ошибка при сохранении. Повторите попытку позже',
+            '401': 'Пользователь не авторизован',
+            '204': 'Заявка не обнаружена',
+            '200': 'Заявка успешно сохранена'
+        }
+    )
+    def save_app(self, request, *args, **kwargs):
+        """Сохранение заявки"""
+        try:
+            serialize = AppSaveSerializer(data=request.data)
+            if serialize.is_valid(raise_exception=True):
+                for field in serialize.data['fields']:
+                    field_id = value = ''
+                    for k,v in field.items():
+                        if k == 'field_id':
+                            field_id = v
+                        if k == 'value':
+                            value = v
+                    AppFormFieldsUtils.save_field_value(
+                        field_id,
+                        value
+                    )
+                app = AppsUtils.get_app_by_user_and_event_id(request.user.id, serialize.data['event_id'])
+                AppsUtils.change_app_status(
+                    app.object_id,
+                    CREATED
+                )
+                self.journal.write(
+                    self.pu.get_display_name('django_user_id', request.user.id),
+                    SUCCESS,
+                    f'У заявки изменен статус на "Сохранена"'
+                )
+                return self.ru.ok_response_no_data()
+            else:
+                self.journal.write(
+                    'Система',
+                    ERROR,
+                    f'Запрос на сохранение заявки не прошел сериализацию'
+                )
+                return self.ru.sorry_try_again_response()
+        except Exception:
+            self.journal.write(
+                'Система',
+                ERROR,
+                f'Ошибка при сохранении заявки: '
+                f'{ExceptionHandling.get_traceback()}'
+            )
+            return self.ru.bad_request_response(
+                f'Ошибка при сохранении заявки. Повторите попытку позже'
+            )
+

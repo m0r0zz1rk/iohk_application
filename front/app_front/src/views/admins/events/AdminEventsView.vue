@@ -12,7 +12,7 @@
 
 <script>
 import LkBase from "../../../components/LkBase.vue";
-import PaginationTable from "../../../components/PaginationTable.vue";
+import PaginationTable from "../../../components/tables/PaginationTable.vue";
 import AdminEventsTable from "./AdminEventsTable.vue";
 
 export default {

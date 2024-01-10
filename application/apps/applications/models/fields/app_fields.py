@@ -55,10 +55,13 @@ def create_app_form_fields(instance, created, **kwargs):
         qs_apps = apps_model.objects.filter(event_id=instance.event_id)
         if qs_apps.count() > 0:
             for app in qs_apps:
-                data = {
-                    'app_id': app.object_id,
-                    'field_id': instance.object_id,
-                    'user_form': instance.user_app,
-                    'value': ''
-                }
-                app_form_fields_model.objects.create(**data)
+                rec_ids = app_form_fields_model.objects.filter(app_id=app.object_id).values_list('rec_id', flat=True).distinct()
+                for id in rec_ids:
+                    if id != 0:
+                        data = {
+                            'app_id': app.object_id,
+                            'field_id': instance.object_id,
+                            'rec_id': id,
+                            'value': ''
+                        }
+                        app_form_fields_model.objects.create(**data)

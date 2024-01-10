@@ -77,7 +77,7 @@
 import LkBase from "../../components/LkBase.vue";
 import {apiRequest} from "../../additional/functions/api_request.js";
 import EventsGrid from "../../components/EventsGrid.vue";
-import PaginationTable from "../../components/PaginationTable.vue";
+import PaginationTable from "../../components/tables/PaginationTable.vue";
 
 export default {
   name: 'Events',

@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import PaginationTable from "../../components/PaginationTable.vue";
+import PaginationTable from "../../components/tables/PaginationTable.vue";
 import LkBase from "../../components/LkBase.vue";
 import journalEventResult from "../../additional/consts/journal_event_results.js";
 import journalRecTypes from "../../additional/consts/journal_rec_types.js";

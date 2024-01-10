@@ -19,9 +19,9 @@ class AppFormFields(BaseTable):
         default=None,
         verbose_name='Поля формы заявки'
     )
-    user_form = models.BooleanField(
-        default=True,
-        verbose_name='Поле заявки пользователя'
+    rec_id = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Номер строки'
     )
     value = models.TextField(
         max_length=5000,

@@ -80,6 +80,5 @@ class AppFieldTypesUtils:
     def add_base_field_types(self):
         """Добавление базовых типов полей в БД"""
         for field_type in self.base_types:
-            print(field_type)
             new_type = AppFieldTypes(**field_type)
             new_type.save()

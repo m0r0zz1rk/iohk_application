@@ -431,13 +431,13 @@
 </template>
 
 <script>
-import PasswordField from "./PasswordField.vue";
-import SexBadge from "./badges/SexBadge.vue";
-import PhoneField from "./PhoneField.vue";
-import JournalEventResultBadge from "./badges/JournalEventResultBadge.vue";
-import EventStatus from "./badges/EventStatus.vue";
-import {event_status_db_name, event_status_display_name} from "../additional/functions/event_status_display_name.js";
-import {apiRequest} from "../additional/functions/api_request.js";
+import PasswordField from "../PasswordField.vue";
+import SexBadge from "../badges/SexBadge.vue";
+import PhoneField from "../PhoneField.vue";
+import JournalEventResultBadge from "../badges/JournalEventResultBadge.vue";
+import EventStatus from "../badges/EventStatus.vue";
+import {event_status_db_name, event_status_display_name} from "../../additional/functions/event_status_display_name.js";
+import {apiRequest} from "../../additional/functions/api_request.js";
 
 export default {
   name: 'PaginationTable',

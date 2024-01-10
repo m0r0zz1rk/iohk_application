@@ -33,3 +33,15 @@ class EventsShortInfoSerializer(serializers.ModelSerializer):
             'date_range',
             'categories'
         )
+
+
+class EventAppsRequiredSerializer(serializers.Serializer):
+    """Сериализация необходимости форм заявок на мероприятие"""
+    user_app = serializers.BooleanField(
+        default=False,
+        label='Заявка пользователя'
+    )
+    part_app = serializers.BooleanField(
+        default=False,
+        label='Заявки участников от пользователя'
+    )

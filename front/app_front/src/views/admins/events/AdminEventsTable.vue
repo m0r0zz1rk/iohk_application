@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import PaginationTable from "../../../components/PaginationTable.vue";
+import PaginationTable from "../../../components/tables/PaginationTable.vue";
 import {apiRequest} from "../../../additional/functions/api_request.js";
 
 export default {

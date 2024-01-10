@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import PaginationTable from "../../components/PaginationTable.vue";
+import PaginationTable from "../../components/tables/PaginationTable.vue";
 import LkBase from "../../components/LkBase.vue";
 import ProfileForm from "../../components/ProfileForm.vue";
 import {apiRequest} from "../../additional/functions/api_request.js";

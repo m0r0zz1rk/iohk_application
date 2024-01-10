@@ -456,7 +456,7 @@
 
 <script>
 import LkBase from "../../../components/LkBase.vue";
-import PaginationTable from "../../../components/PaginationTable.vue";
+import PaginationTable from "../../../components/tables/PaginationTable.vue";
 import AdminEventsTable from "./AdminEventsTable.vue";
 import TinyMCE from "../../../components/TinyMCE.vue";
 import app_form_field_types from "../../../additional/consts/app_form_field_types.js";

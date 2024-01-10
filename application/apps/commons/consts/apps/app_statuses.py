@@ -7,7 +7,7 @@ REVOKED = 'REVOKED'
 
 APP_STATUSES = (
     (DRAFT, 'Черновик'),
-    (CREATED, 'Создана'),
+    (CREATED, 'Сохранена'),
     (SHIPPED, 'Отправлена'),
     (ACCEPTED, 'Принята'),
     (REJECTED, 'Отклонена'),

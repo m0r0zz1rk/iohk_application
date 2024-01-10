@@ -1,5 +1,14 @@
 <template>
-  <ui5-input type="Text" v-model="componentPhoneField"  placeholder="+7 (###) ###-##-##"
+  <ui5-input v-if="appChangePhoneAction"
+             type="Text" v-model="componentPhoneField"  placeholder="+7 (###) ###-##-##"
+             :value-state="phoneValueState" maxlength="18"
+             @input = "e => checkPhoneLength(e)"
+             :readonly="readOnly"
+             @change="appChangePhoneAction(fieldObjectID, componentPhoneField)" required>
+    <div slot="valueStateMessage">{{ phoneStateText }}</div>
+  </ui5-input>
+  <ui5-input v-if="!(appChangePhoneAction)"
+             type="Text" v-model="componentPhoneField"  placeholder="+7 (###) ###-##-##"
              :value-state="phoneValueState" maxlength="18"
              @input = "e => checkPhoneLength(e)"
              @change="changePhoneAction && changePhoneAction()" required>
@@ -7,6 +16,7 @@
   </ui5-input>
   <input v-model="componentPhoneField" v-mask="'+7 (###) ###-##-##'" hidden>
 </template>
+
 
 
 <script>
@@ -20,9 +30,12 @@ export default {
   },
   props: {
     phoneValue: {type: String},
+    readOnly: {type: Boolean},
     phoneValueState: {type: String},
     phoneStateText: {type: String},
-    changePhoneAction: {type: Function}
+    fieldObjectID: {type: String},
+    changePhoneAction: {type: Function},
+    appChangePhoneAction: {type: Function}
   },
   methods: {
     checkPhoneLength(e) {
