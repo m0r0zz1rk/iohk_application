@@ -1,12 +1,14 @@
 from django.urls import path
 
 from apps.users.api.apps.app_form_fields_viewset import AppFormFieldsViewSet
+from apps.users.api.apps.apps_list_viewset import AppsListViewSet
 from apps.users.api.apps.apps_viewset import AppsViewSet
 from apps.users.api.events.event_app_required_viewset import EventAppRequiredViewSet
 from apps.users.api.events.event_information_viewset import EventInformationViewSet
 from apps.users.api.events.event_schedule_viewset import EventScheduleViewSet
 from apps.users.api.events.events_types_viewset import EventsTypesViewSet
 from apps.users.api.events.events_viewset import EventsViewSet
+from apps.users.api.schedule_viewset import ScheduleViewSet
 
 event_types_urlpatterns = [
     path('event_types/', EventsTypesViewSet.as_view({'get': 'list'}))
@@ -22,6 +24,7 @@ event_info_urlpatterns = [
 
 events_schedule_urlpatterns = [
     path('event_schedule/<uuid:event_id>/', EventScheduleViewSet.as_view({'get': 'list'})),
+    path('schedule/', ScheduleViewSet.as_view({'get': 'list'}))
 ]
 
 event_app_required_urlpatterns = [
@@ -29,7 +32,9 @@ event_app_required_urlpatterns = [
 ]
 
 apps_urlpatterns = [
+    path('apps/list/', AppsListViewSet.as_view({'get': 'get_apps_list'})),
     path('apps/check_exist/<uuid:event_id>/', AppsViewSet.as_view({'get': 'check_app_exist'})),
+    path('apps/app_submit/<uuid:event_id>/', AppsViewSet.as_view({'get': 'app_submit'})),
     path('apps/app_info/<uuid:event_id>/', AppsViewSet.as_view({'get': 'get_app_info'})),
     path('apps/user_app_fields/<uuid:event_id>/', AppsViewSet.as_view({'get': 'get_app_fields'})),
     path('apps/save/', AppsViewSet.as_view({'post': 'save_app'})),

@@ -1,5 +1,6 @@
 from django.urls import path
 
+from apps.admins.api.apps.admin_apps_list_viewset import AdminAppsListViewSet
 from apps.admins.api.events.event_app_fields_viewset import EventAppFieldsViewSet
 from apps.admins.api.events.events_app_required_viewset import EventsAppRequiredViewSet
 from apps.admins.api.events.events_information_viewset import EventsInformationViewSet
@@ -72,7 +73,11 @@ event_app_fields_urlpatterns = [
     path('app_field_delete/<uuid:field_id>/', EventAppFieldsViewSet.as_view({'delete': 'delete'})),
 ]
 
+apps_urlpatterns = [
+    path('apps/list/', AdminAppsListViewSet.as_view({'get': 'get_apps_list'}))
+]
+
 urlpatterns = guides_urlpatterns + users_urlpatterns + journal_urlpatterns + \
             events_urlpatterns + events_information_urlpatterns + \
             events_schedule_urlpatterns + events_apps_required_urlpatterns + \
-            event_app_fields_urlpatterns
+            event_app_fields_urlpatterns + apps_urlpatterns

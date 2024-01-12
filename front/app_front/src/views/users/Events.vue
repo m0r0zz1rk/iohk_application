@@ -61,9 +61,9 @@
 
     </div>
     <div slot="footer" style="display: flex; justify-content: flex-end; width: 100%; align-items: center">
-      <form v-if="!(selectedEvent.app_exists)" ref="login_form"  @submit="eventAppCreate">
-        <ui5-button design="Emphasized" submits>Подать заявку</ui5-button>
-      </form>
+      <ui5-button v-if="!(selectedEvent.app_exists)"
+                  design="Emphasized" :disabled="appCreating"
+                  @click="e => eventAppCreate()">Подать заявку</ui5-button>
       <ui5-button v-if="selectedEvent.app_exists"
                   @click="e => $router.push('/apps/app_detail/'+selectedEvent.id+'/')"
                   design="Emphasized">
@@ -85,6 +85,7 @@ export default {
   data() {
     return {
       loader: false,
+      appCreating: false,
       eventsTypes: [],
       events: [],
       content: '',
@@ -190,8 +191,26 @@ export default {
             this.selectedEvent.loading = false
           })
     },
-    async eventAppCreate(e) {
-      e.preventDefault()
+    async eventAppCreate() {
+      this.appCreating = true
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/users/apps/app_submit/'+this.selectedEvent.id+'/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
+          .then(data => {
+            if (data.error) {
+              showMessage('error', data.error)
+              this.appCreating = false
+              return false
+            } else {
+              showMessage('success', 'Заявка успешно подана')
+              this.$router.push('/apps/app_detail/'+this.selectedEvent.id+'/')
+            }
+          })
     },
 
   },

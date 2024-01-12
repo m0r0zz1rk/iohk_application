@@ -266,7 +266,9 @@
                                                    v-bind:result="row[field.alias]" />
                           <EventStatus v-if="field.alias === 'event_status'"
                                        v-bind:status="row[field.alias]" />
-                          <div v-if="!(['event_result', 'event_status'].includes(field.alias))">
+                          <AppStatus v-if="field.alias === 'app_status'"
+                                     v-bind:status="row[field.alias]" />
+                          <div v-if="!(['event_result', 'event_status', 'app_status'].includes(field.alias))">
                             {{row[field.alias]}}
                           </div>
                         </div>
@@ -438,10 +440,11 @@ import JournalEventResultBadge from "../badges/JournalEventResultBadge.vue";
 import EventStatus from "../badges/EventStatus.vue";
 import {event_status_db_name, event_status_display_name} from "../../additional/functions/event_status_display_name.js";
 import {apiRequest} from "../../additional/functions/api_request.js";
+import AppStatus from "../badges/AppStatus.vue";
 
 export default {
   name: 'PaginationTable',
-  components: {EventStatus, JournalEventResultBadge, PhoneField, SexBadge, PasswordField},
+  components: {AppStatus, EventStatus, JournalEventResultBadge, PhoneField, SexBadge, PasswordField},
   props: {
     tableMode: {type: String},
     recsURL: {type: String},

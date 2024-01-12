@@ -4,6 +4,7 @@ from typing import Optional
 
 from apps.applications.models import Apps
 from apps.authen.models import Profiles
+from apps.authen.utils.profile import ProfileUtils
 from apps.commons.consts.apps.app_statuses import APP_STATUSES, DRAFT, CREATED, SHIPPED, ACCEPTED, REJECTED, REVOKED
 
 
@@ -13,7 +14,30 @@ class AppsUtils:
     @staticmethod
     def get_all_apps():
         """Получение всех заявок по всем мероприятиям"""
-        return Apps.objects.all()
+        return Apps.objects.all().order_by('-date_create')
+
+    @staticmethod
+    def get_user_apps_list(user_id: int) -> Optional[Apps]:
+        """Получение списка заявок пользователя"""
+        try:
+            profile = ProfileUtils.get_profile_by_user_id(user_id)
+            return Apps.objects.filter(profile_id=profile.object_id).order_by('-date_create')
+        except Exception:
+            return None
+
+    @staticmethod
+    def app_submit(profile_id: uuid, event_id: uuid) -> bool:
+        """Подать заявку на участие в мероприятии"""
+        try:
+            if not Apps.objects.filter(profile_id=profile_id).filter(event_id=event_id).exists():
+                new_app = Apps(
+                    profile_id=profile_id,
+                    event_id=event_id
+                )
+                new_app.save()
+            return True
+        except Exception:
+            return False
 
     @staticmethod
     def get_app_by_user_and_event_id(user_id: int, event_id: uuid) -> Optional[Apps]:

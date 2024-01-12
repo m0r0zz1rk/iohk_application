@@ -78,8 +78,22 @@ export default {
           text: 'Заявки',
           only_admin: true,
           icon: 'request',
-          mainMenu: 'apps',
-          next: '/apps'
+          mainMenu: 'admin_apps',
+          next: '/admin_apps'
+        },
+        {
+          text: 'Заявки',
+          only_admin: false,
+          icon: 'request',
+          mainMenu: 'user_apps',
+          next: '/user_apps'
+        },
+        {
+          text: 'Расписание',
+          only_admin: false,
+          icon: 'time-entry-request',
+          mainMenu: 'user_schedule',
+          next: '/user_schedule'
         },
         {
           text: 'Журнал',

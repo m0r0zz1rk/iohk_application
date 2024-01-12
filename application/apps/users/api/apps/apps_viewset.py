@@ -37,7 +37,7 @@ class AppsViewSet(viewsets.ViewSet):
     def check_app_exist(self, request, *args, **kwargs):
         """Проверка на наличие заявки"""
         try:
-            profile = ProfileUtils.get_profile_by_user_id(request.user.id)
+            profile = self.pu.get_profile_by_user_id(request.user.id)
             check = AppsUtils.check_event_app_for_user(profile.object_id, self.kwargs['event_id'])
             if check:
                 return self.ru.ok_response_no_data()
@@ -56,6 +56,46 @@ class AppsViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         tags=['Заявки (ЛК пользователя)'],
+        operation_description="Подача заявки на участие в мероприятии",
+        responses={
+            '400': 'Ошибка при проверке подачи заявки. Повторите попытку позже',
+            '401': 'Пользователь не авторизован',
+            '403': 'Доступ запрещен',
+            '200': 'Заявка успешно подана'
+        }
+    )
+    def app_submit(self, request, *args, **kwargs):
+        try:
+            profile = self.pu.get_profile_by_user_id(request.user.id)
+            process = AppsUtils.app_submit(
+                profile.object_id,
+                self.kwargs['event_id']
+            )
+            if process:
+                return self.ru.ok_response('Заявка успешно подана')
+            else:
+                self.journal.write(
+                    'Система',
+                    ERROR,
+                    f'Ошибка при подачи заявки: '
+                    f'ошибка в функции app_submit'
+                )
+                return self.ru.bad_request_response(
+                    f'Ошибка при подачи заявки. Повторите попытку позже'
+                )
+        except Exception:
+            self.journal.write(
+                'Система',
+                ERROR,
+                f'Ошибка при подачи заявки: '
+                f'{ExceptionHandling.get_traceback()}'
+            )
+            return self.ru.bad_request_response(
+                f'Ошибка при подачи заявки. Повторите попытку позже'
+            )
+
+    @swagger_auto_schema(
+        tags=['Заявки (ЛК пользователя)'],
         operation_description="Получение основной информации по заявке",
         responses={
             '400': 'Ошибка при получении информации. Повторите попытку позже',
@@ -66,7 +106,7 @@ class AppsViewSet(viewsets.ViewSet):
     def get_app_info(self, request, *args, **kwargs):
         """Получение основной информации по заявке"""
         try:
-            profile = ProfileUtils.get_profile_by_user_id(request.user.id)
+            profile = self.pu.get_profile_by_user_id(request.user.id)
             app = AppsUtils.get_app_by_profile_and_event_id(
                 profile.object_id,
                 self.kwargs['event_id']
@@ -96,7 +136,7 @@ class AppsViewSet(viewsets.ViewSet):
     def get_app_fields(self, request, *args, **kwargs):
         """Получение списка заполненных полей заявки"""
         try:
-            profile = ProfileUtils.get_profile_by_user_id(request.user.id)
+            profile = self.pu.get_profile_by_user_id(request.user.id)
             form_fields = AppFormFieldsUtils.get_user_form_fields_for_app(
                 profile.object_id,
                 self.kwargs['event_id']

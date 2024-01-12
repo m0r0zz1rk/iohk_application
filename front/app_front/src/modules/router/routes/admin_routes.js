@@ -6,6 +6,8 @@ import Users from "../../../views/admins/Users.vue";
 import Journal from "../../../views/admins/Journal.vue";
 import AdminEventsView from "../../../views/admins/events/AdminEventsView.vue";
 import AdminEventsManage from "../../../views/admins/events/AdminEventsManage.vue";
+import AdminApps from "../../../views/admins/apps/AdminApps.vue";
+import AdminAppView from "../../../views/admins/apps/AdminAppView.vue";
 
 const admin_routes = [
     {
@@ -31,6 +33,18 @@ const admin_routes = [
         name: 'AdminEventsManage',
         component: AdminEventsManage,
         beforeEnter: [isAuthenticated, isAdministrator]
+    },
+    {
+        path: '/admin_apps/',
+        name: 'AdminApps',
+        component: AdminApps,
+        beforeEnter: [isAuthenticated, isAdministrator]
+    },
+    {
+        path: '/apps/admin_app_detail/:appId',
+        name: 'AdminAppView',
+        component: AdminAppView,
+        beforeEnter: [isAuthenticated, ]
     },
     {
         path: '/journal',

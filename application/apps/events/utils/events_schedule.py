@@ -1,5 +1,12 @@
+import datetime
 import uuid
+from typing import Optional
 
+from django.apps import apps
+from django.db.models import Q
+from django.utils import timezone
+
+from apps.commons.consts.apps.app_statuses import ACCEPTED
 from apps.events.models import EventsSchedule
 
 
@@ -24,6 +31,27 @@ class EventsScheduleUtils:
         if EventsSchedule.objects.filter(object_id=schedule_id).exists():
             return EventsSchedule.objects.get(object_id=schedule_id)
         return None
+
+    @staticmethod
+    def get_user_schedule(profile_id: uuid) -> Optional[EventsSchedule]:
+        """Получение расписания ближайших занятий для ЛК пользователя"""
+        try:
+            apps_model = apps.get_model('applications', 'Apps')
+            user_apps = apps_model.objects.filter(profile_id=profile_id)
+            if user_apps.count() > 0:
+                event_ids = [app.event_id for app in user_apps.filter(status=ACCEPTED)]
+                tz = timezone.get_current_timezone()
+                res = (EventsSchedule.objects.filter(event_id__in=event_ids).
+                       filter(
+                            Q(start__gte=datetime.datetime.now().replace(tzinfo=tz)) &
+                            Q(end__gte=datetime.datetime.now().replace(tzinfo=tz))
+                )
+                )
+                print(res)
+                return res
+            return None
+        except Exception:
+            return None
 
     @staticmethod
     def check_part_cross_to_another(part_id: uuid) -> bool:

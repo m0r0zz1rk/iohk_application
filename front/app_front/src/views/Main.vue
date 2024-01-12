@@ -1,7 +1,8 @@
 <template>
   <LkBase ref="baseComponent">
     <slot>
-        <ui5-card class="half_width_and_center">
+      <div class="grid-container">
+        <ui5-card>
           <ui5-card-header slot="header"
                            :title-text="profileData.surname+' '+profileData.name+' '+profileData.patronymic"
                            :subtitle-text="profileData.position">
@@ -28,6 +29,21 @@
                         @click="this.$router.push('/profile')">Перейти в профиль</ui5-button>
           </div>
         </ui5-card>
+        <ui5-card v-if="!(isAdmin)">
+          <ui5-card-header slot="header"
+                           title-text="Последние заявки">
+          </ui5-card-header>
+          <ui5-list separators="None" style="margin-block-end: 0.75rem;">
+            <ui5-li v-for="app in appsList"
+                    :description="'Дата обновления: '+getDateUpdate(app.date_update)"
+                    :additional-text="'Статус: '+app.app_status"
+                    :additional-text-state="additionalTextState(app.app_status)"
+                    @click="e => $router.push('/apps/app_detail/'+app.event_id+'/')">
+              Мероприятие: {{app.event_name}}
+            </ui5-li>
+          </ui5-list>
+        </ui5-card>
+      </div>
     </slot>
   </LkBase>
 </template>
@@ -35,6 +51,7 @@
 <script>
 import LkBase from '../components/LkBase.vue'
 import {apiRequest} from "../additional/functions/api_request.js";
+import store from "../modules/store/index.js";
 
 export default {
   name: 'Main',
@@ -43,9 +60,11 @@ export default {
   },
   data() {
     return {
+      isAdmin: false,
       profileData: {},
       systemsData: {},
       rolesData: {},
+      appsList: [],
       systemLoads: true,
       rolesLoads: true,
     }
@@ -58,12 +77,55 @@ export default {
           5000
       )
     },
+    async checkAdmin() {
+      apiRequest(
+          store.state.backendUrl+'/api/v1/auth/check_admin/',
+          'GET',
+          true,
+          null,
+          false,
+          true
+      )
+          .then(resp => {
+            this.isAdmin = resp.status === 200;
+          })
+    },
+    getDateUpdate(date_update) {
+      if (date_update !== null) {return date_update}
+      else {return '-'}
+    },
+    additionalTextState(status) {
+      let state = 'None'
+      switch (status) {
+        case 'Черновик':
+        case 'Сохранена':
+        case 'Отозвана':
+          break
+
+        case 'Отправлена':
+          state = 'Warning'
+          break
+
+        case 'Принята':
+          state = 'Success'
+          break
+
+        case 'Отклонена':
+          state = 'Error'
+          break
+
+        default:
+          break
+      }
+      return state
+    },
     async getProfileData() {
       apiRequest(
           this.$store.state.backendUrl+'/api/v1/auth/profile/',
           'GET',
           true,
           null,
+          false,
           false,
           false
       )
@@ -76,8 +138,27 @@ export default {
             }
           })
     },
+    async getUserApps() {
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/users/apps/list/?size=3&start=0',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
+          .then(data => {
+            if (data.results) {
+              this.appsList = data.results
+            }
+          })
+    },
     onLoad() {
+      this.checkAdmin()
       this.$refs.baseComponent.useLoader()
+      if (!(this.isAdmin)) {
+        this.getUserApps()
+      }
       this.getProfileData()
     }
   },
@@ -88,7 +169,12 @@ export default {
 </script>
 
 <style scoped>
-
+.grid-container {
+  display: grid;
+  width: 97%;
+  grid-template-columns: repeat(2, 3fr);
+  gap: 1rem;
+}
 ui5-card::slotted(.ui5-card-root) {
   overflow: auto;
 }

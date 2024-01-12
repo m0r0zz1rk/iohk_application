@@ -150,6 +150,7 @@ export default {
   components: {PartAppsTable, PhoneField, AppStatus, InputFormFieldTypes},
   props: {
     eventId: {type: String},
+    appId: {type: String},
     lkUser: {type: Boolean},
     loaderFunc: {type: Function}
   },

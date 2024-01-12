@@ -1,4 +1,4 @@
-export function apiRequest(url, method, token_required, body, body_form, only_resp) {
+export function apiRequest(url, method, token_required, body, body_form, only_resp, check_admin) {
     let headers = {
         'X-CSRFToken': getCookie("csrftoken"),
         'Content-Type': 'web_app/json;charset=UTF-8'
@@ -27,7 +27,7 @@ export function apiRequest(url, method, token_required, body, body_form, only_re
                 showMessage('error', 'Пожалуйста, войдите в систему', false)
                 this.$router.push('/?nextUrl='+window.location.href.split('/')[3])
                 return false
-            } else if (resp.status === 403) {
+            } else if (check_admin && resp.status === 403) {
                 showMessage('error', 'Доступ запещен', false)
                 this.$router.push('/main')
                 return false

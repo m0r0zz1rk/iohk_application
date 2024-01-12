@@ -1,7 +1,6 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
-from apps.commons.permissions.is_users import IsUsers
 from apps.admins.serializers.guides.events_types_serializer import EventsTypeSerializer
 from apps.commons.consts.journals.journal_event_results import ERROR
 from apps.commons.consts.journals.journal_rec_types import USERS
@@ -14,7 +13,7 @@ from apps.journals.writer.journal_writer import JournalWriter
 
 class EventsTypesViewSet(viewsets.ModelViewSet):
     """API для получения типов мероприятий"""
-    permission_classes = [IsAuth, IsUsers]
+    permission_classes = [IsAuth,]
     queryset = EventsTypesUtils.get_events_type()
     serializer_class = EventsTypeSerializer
 
