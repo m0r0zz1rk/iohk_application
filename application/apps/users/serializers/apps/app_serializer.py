@@ -15,9 +15,15 @@ class AppSaveSerializer(serializers.Serializer):
 
 class AppChangeStatusSerializer(serializers.Serializer):
     """Сериализация данных при изменении статуса заявки"""
-    event_id = serializers.UUIDField(
+    entity_id = serializers.UUIDField(
         allow_null=False,
-        label='Object_id мероприятия'
+        label='Object_id сущности'
+    )
+    message = serializers.CharField(
+        max_length=2000,
+        allow_blank=True,
+        allow_null=True,
+        label='Сообщение по заявке'
     )
     status = serializers.CharField(
         max_length=30,

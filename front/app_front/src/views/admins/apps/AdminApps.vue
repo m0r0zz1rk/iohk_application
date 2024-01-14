@@ -8,6 +8,7 @@
         <div style="height:  80vh">
           <PaginationTable v-if="this.fieldsArray.length > 0"
                            v-bind:tableMode="'SingleSelect'"
+                           v-bind:outsideFilterString="urlParamsFilter"
                            v-bind:recsURL="'/api/v1/admins/apps/list/'"
                            v-bind:searchRow="true"
                            v-bind:colCount="8"
@@ -35,6 +36,7 @@ export default {
   components: {LkBase, PaginationTable},
   data() {
     return {
+      urlParamsFilter: '',
       fieldsArray: [],
       tableColumns: [
         {name: 'ID объекта', alias: 'object_id', whiteSpace: 'nowrap'},
@@ -49,6 +51,16 @@ export default {
   },
   methods: {
     init() {
+      let url = new URL(window.location.href);
+      if (url.searchParams.size > 0) {
+        let filter_str = '&'
+        this.tableColumns.map((column) => {
+          if (url.searchParams.has(column.alias)) {
+            filter_str += column.alias+'='+url.searchParams.get(column.alias)+'&'
+          }
+        })
+        this.urlParamsFilter = filter_str
+      }
       apiRequest(
           this.$store.state.backendUrl+'/api/v1/users/event_types/',
           'GET',
@@ -143,7 +155,7 @@ export default {
           })
     },
     openApp(row) {
-      this.$router.push('/apps/admin_app_detail/'+row.object_id+'/')
+      window.open('/apps/admin_app_detail/'+row.object_id+'/', '_blank')
     }
   },
   mounted() {

@@ -5,7 +5,6 @@ from rest_framework.permissions import IsAuthenticated
 from apps.authen.utils.profile import ProfileUtils
 from apps.commons.consts.journals.journal_event_results import ERROR
 from apps.commons.consts.journals.journal_rec_types import EVENTS
-from apps.commons.permissions.is_users import IsUsers
 from apps.commons.utils.django.exception import ExceptionHandling
 from apps.commons.utils.django.response import ResponseUtils
 from apps.events.utils.events_app_required import EventsAppsRequiredUtils
@@ -15,13 +14,13 @@ from apps.users.serializers.events_serializer import EventAppsRequiredSerializer
 
 class EventAppRequiredViewSet(viewsets.ViewSet):
     """API для получения доступных форм заявок"""
-    permission_classes = [IsAuthenticated, IsUsers]
+    permission_classes = [IsAuthenticated,]
     journal = JournalWriter(EVENTS)
     ru = ResponseUtils()
     pu = ProfileUtils()
 
     @swagger_auto_schema(
-        tags=['Мероприятия (ЛК пользователя)'],
+        tags=['Мероприятия (ЛК пользователя/администратора)'],
         operation_description="Получение типов форм заявок для мероприятия",
         responses={
             '400': 'Ошибка при получении информации. Повторите попытку позже',
@@ -32,9 +31,13 @@ class EventAppRequiredViewSet(viewsets.ViewSet):
     def get_app_required(self, request, *args, **kwargs):
         """Получение типов форм заявок для мероприятия"""
         try:
-            app_required = EventsAppsRequiredUtils.get_apps_required_for_event(
-                self.kwargs['event_id']
+            app_required = EventsAppsRequiredUtils.get_apps_required_for_event_by_app_id(
+                self.kwargs['entity_id']
             )
+            if app_required is None:
+                app_required = EventsAppsRequiredUtils.get_apps_required_for_event(
+                    self.kwargs['entity_id']
+                )
             data = {
                 'user_app': app_required.user_app_required,
                 'part_app': app_required.participant_app_required

@@ -41,11 +41,19 @@ class AppsUtils:
 
     @staticmethod
     def get_app_by_user_and_event_id(user_id: int, event_id: uuid) -> Optional[Apps]:
-        """Получение заявки по object_id"""
+        """Получение заявки по ID пользователя и Object_id мероприятия"""
         try:
             return Apps.objects.filter(
                 profile_id=Profiles.objects.get(django_user_id=user_id).object_id
             ).get(event_id=event_id)
+        except Exception:
+            return None
+
+    @staticmethod
+    def get_app_by_object_id(app_id: uuid) -> Optional[Apps]:
+        """Получение заявки по Object_id"""
+        try:
+            return Apps.objects.get(object_id=app_id)
         except Exception:
             return None
 
@@ -66,7 +74,11 @@ class AppsUtils:
             return False
 
     @staticmethod
-    def change_app_status(app_id: uuid, new_status: APP_STATUSES) -> bool:
+    def change_app_status(
+            app_id: uuid,
+            new_status: APP_STATUSES,
+            message=None
+    ) -> bool:
         """Изменение статуса заявки"""
         try:
             app = Apps.objects.get(object_id=app_id)
@@ -86,6 +98,8 @@ class AppsUtils:
                 app.status = REVOKED
             else:
                 return False
+            if message is not None:
+                app.message = message
             app.save()
             return True
         except Exception:

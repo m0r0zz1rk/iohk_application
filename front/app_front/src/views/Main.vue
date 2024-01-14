@@ -43,6 +43,20 @@
             </ui5-li>
           </ui5-list>
         </ui5-card>
+        <ui5-card v-if="isAdmin">
+          <ui5-card-header slot="header"
+                           title-text="Заявки опубликованных мероприятий">
+          </ui5-card-header>
+          <ui5-list separators="None" style="margin-block-end: 0.75rem;">
+            <ui5-li v-for="event in appsCountForEvents"
+                    :description="'Сроки проведения: '+event.event_date_range"
+                    :additional-text="'Заявок: '+event.apps_count"
+                    @click="e => $router.push('/admin_apps/?' +
+                     'event_name='+event.event_name+'&event_date_range='+event.event_date_range)">
+              {{event.event_name}}
+            </ui5-li>
+          </ui5-list>
+        </ui5-card>
       </div>
     </slot>
   </LkBase>
@@ -65,6 +79,7 @@ export default {
       systemsData: {},
       rolesData: {},
       appsList: [],
+      appsCountForEvents: [],
       systemLoads: true,
       rolesLoads: true,
     }
@@ -88,6 +103,11 @@ export default {
       )
           .then(resp => {
             this.isAdmin = resp.status === 200;
+            if (!(this.isAdmin)) {
+              this.getUserApps()
+            } else {
+              this.getAppsCountForEvents()
+            }
           })
     },
     getDateUpdate(date_update) {
@@ -153,12 +173,24 @@ export default {
             }
           })
     },
+    async getAppsCountForEvents() {
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/admins/main/apps_count/',
+          'GET',
+          true,
+          null,
+          false,
+          false
+      )
+          .then(data => {
+            if (data.success) {
+              this.appsCountForEvents = data.success
+            }
+          })
+    },
     onLoad() {
       this.checkAdmin()
       this.$refs.baseComponent.useLoader()
-      if (!(this.isAdmin)) {
-        this.getUserApps()
-      }
       this.getProfileData()
     }
   },
@@ -168,7 +200,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .grid-container {
   display: grid;
   width: 97%;
@@ -182,7 +214,6 @@ ui5-panel {
   white-space: normal;
   word-break: break-word;
 }
-
 ui5-list {
   white-space: normal;
   word-break: break-word;
@@ -198,6 +229,7 @@ ui5-button {
   --sapButton_Emphasized_Background: #00455d;
   --sapButton_Background: #00455d;
   --sapButton_Emphasized_BorderColor: #00455d;
+  --sapButton_Emphasized_TextColor: #ffffff;
   --sapButton_Emphasized_Hover_Background: #ffffff;
   --sapButton_Emphasized_Hover_TextColor: #00455d;
   --sapButton_Emphasized_Hover_BorderColor: #00455d;
@@ -210,12 +242,21 @@ ui5-button {
   --sapButton_Hover_TextColor: #00455d;
   --sapButton_Active_Background: #00455d;
   --sapButton_Active_BorderColor: #00455d;
+  --sapButton_Lite_TextColor: #cb5b11;
 }
-ui5-popover {
-  width: 20vw;
+.ui5-calheader-midcontainer .ui5-calheader-middlebtn{
+  color: orange;
 }
 ui5-busy-indicator {
   --_ui5-v1-17-0_busy_indicator_color: #00455d;
+}
+ui5-popover {
+  --_ui5-v1-20-0_token_text_color: #cb5b11;
+  --sapContent_IconColor: #cb5b11;
+  --sapContent_NonInteractiveIconColor: #cb5b11;
+}
+ui5-date-picker {
+  --sapButton_Lite_TextColor: #cb5b11;
 }
 .card-center-button-div {
   display: flex;

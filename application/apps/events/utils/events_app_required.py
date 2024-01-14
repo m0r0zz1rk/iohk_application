@@ -1,6 +1,8 @@
 import uuid
 from typing import Optional
 
+from django.apps import apps
+
 from apps.events.models import EventsAppsRequired
 
 
@@ -18,6 +20,17 @@ class EventsAppsRequiredUtils:
         if EventsAppsRequired.objects.filter(event_id=event_id).exists():
             return EventsAppsRequired.objects.get(event_id=event_id)
         return None
+
+    @staticmethod
+    def get_apps_required_for_event_by_app_id(app_id: uuid) -> Optional[EventsAppsRequired]:
+        """Получение записи о необходимости форм заявок для мероприятия по object_id заявки"""
+        apps_model = apps.get_model('applications', 'Apps')
+        try:
+            if EventsAppsRequired.objects.filter(event_id=apps_model.objects.get(object_id=app_id).event_id).exists():
+                return EventsAppsRequired.objects.get(event_id=apps_model.objects.get(object_id=app_id).event_id)
+            return None
+        except Exception:
+            return None
 
     @staticmethod
     def change_app_required_for_event(data: dict) -> bool:

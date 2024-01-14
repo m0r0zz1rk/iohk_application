@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/v1/applications/', include('apps.applications.urls')),
     path('api/v1/auth/', include('apps.authen.urls')),
     path('api/v1/commons/', include('apps.commons.urls')),
+    path('api/v1/reports/', include('apps.reports.urls')),
     path('api/v1/users/', include('apps.users.urls')),
 ]
 

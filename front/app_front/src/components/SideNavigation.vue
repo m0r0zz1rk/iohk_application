@@ -96,6 +96,13 @@ export default {
           next: '/user_schedule'
         },
         {
+          text: 'Отчеты',
+          only_admin: true,
+          icon: 'manager-insight',
+          mainMenu: 'reports',
+          next: '/reports'
+        },
+        {
           text: 'Журнал',
           only_admin: true,
           icon: 'time-account',

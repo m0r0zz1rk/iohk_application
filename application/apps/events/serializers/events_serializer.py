@@ -88,3 +88,18 @@ class EventModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Events
         exclude = ('object_id', 'date_create')
+
+
+class EventsShortSerializer(serializers.ModelSerializer):
+    """Сериализация данных при получении списка с краткой информацией о мероприятиях"""
+    date_range = serializers.SerializerMethodField(
+        label='Сроки проведения мероприятия'
+    )
+
+    def get_date_range(self, obj):
+        return (f'{obj.date_start.strftime('%d.%m.%Y')}-'
+                f'{obj.date_end.strftime('%d.%m.%Y')}')
+
+    class Meta:
+        model = Events
+        fields = ('object_id', 'name', 'date_range', 'event_status')

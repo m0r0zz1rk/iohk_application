@@ -1,5 +1,6 @@
 from django.urls import path
 
+from apps.applications.api.app_status_viewset import AppStatusViewSet
 from apps.users.api.apps.app_form_fields_viewset import AppFormFieldsViewSet
 from apps.users.api.apps.apps_list_viewset import AppsListViewSet
 from apps.users.api.apps.apps_viewset import AppsViewSet
@@ -28,7 +29,7 @@ events_schedule_urlpatterns = [
 ]
 
 event_app_required_urlpatterns = [
-    path('event_app_required/<uuid:event_id>/', EventAppRequiredViewSet.as_view({'get': 'get_app_required'}))
+    path('event_app_required/<uuid:entity_id>/', EventAppRequiredViewSet.as_view({'get': 'get_app_required'}))
 ]
 
 apps_urlpatterns = [
@@ -38,7 +39,7 @@ apps_urlpatterns = [
     path('apps/app_info/<uuid:event_id>/', AppsViewSet.as_view({'get': 'get_app_info'})),
     path('apps/user_app_fields/<uuid:event_id>/', AppsViewSet.as_view({'get': 'get_app_fields'})),
     path('apps/save/', AppsViewSet.as_view({'post': 'save_app'})),
-    path('apps/status_change/', AppsViewSet.as_view({'post': 'app_status_change'})),
+    path('apps/status_change/', AppStatusViewSet.as_view({'post': 'app_status_change'})),
 ]
 
 app_form_fields_urlpatterns = [

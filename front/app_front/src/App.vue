@@ -45,6 +45,7 @@ export default {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  --sapButton_Lite_TextColor: #cb5b11;
 }
 .loader-container {
   position: absolute;

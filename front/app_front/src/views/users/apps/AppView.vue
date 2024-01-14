@@ -7,7 +7,6 @@
         </ui5-card-header>
         <AppInformation v-if="eventId.length > 0"
                         v-bind:loaderFunc="useLoader"
-                        v-bind:lkUser="true"
                         v-bind:eventId="eventId" />
       </ui5-card>
     </slot>

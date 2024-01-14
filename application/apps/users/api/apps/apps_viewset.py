@@ -13,7 +13,7 @@ from apps.commons.utils.django.exception import ExceptionHandling
 from apps.commons.utils.django.response import ResponseUtils
 from apps.journals.writer.journal_writer import JournalWriter
 from apps.users.serializers.apps.app_info_serializer import AppInfoSerializer
-from apps.users.serializers.apps.app_serializer import AppSaveSerializer, AppChangeStatusSerializer
+from apps.users.serializers.apps.app_serializer import AppSaveSerializer
 from apps.users.serializers.apps.app_user_serializer import AppUserSerializer
 
 
@@ -160,54 +160,6 @@ class AppsViewSet(viewsets.ViewSet):
             )
             return self.ru.bad_request_response(
                 f'Ошибка при получении списка. Повторите попытку позже'
-            )
-
-    @swagger_auto_schema(
-        tags=['Заявки (ЛК пользователя)'],
-        request_body=AppChangeStatusSerializer,
-        operation_description="Изменение статуса заявки",
-        responses={
-            '400': 'Ошибка при изменении. Повторите попытку позже',
-            '401': 'Пользователь не авторизован',
-            '204': 'Заявка не обнаружена',
-            '200': 'Статус заявки успешно изменен'
-        }
-    )
-    def app_status_change(self, request, *args, **kwargs):
-        """Изменение статуса заявки"""
-        try:
-            serialize = AppChangeStatusSerializer(data=request.data)
-            if serialize.is_valid(raise_exception=True):
-                app = AppsUtils.get_app_by_user_and_event_id(
-                    request.user.id,
-                    serialize.data['event_id']
-                )
-                AppsUtils.change_app_status(
-                    app.object_id,
-                    serialize.data['status']
-                )
-                self.journal.write(
-                    self.pu.get_display_name('django_user_id', request.user.id),
-                    SUCCESS,
-                    f'Статус заявки "{app}" успешно изменен'
-                )
-                return self.ru.ok_response_no_data()
-            else:
-                self.journal.write(
-                    'Система',
-                    ERROR,
-                    f'Запрос на изменение статуса не прошел сериализацию'
-                )
-                return self.ru.sorry_try_again_response()
-        except Exception:
-            self.journal.write(
-                'Система',
-                ERROR,
-                f'Ошибка при изменении статуса заявки: '
-                f'{ExceptionHandling.get_traceback()}'
-            )
-            return self.ru.bad_request_response(
-                f'Ошибка при изменении статуса заявки. Повторите попытку позже'
             )
 
     @swagger_auto_schema(

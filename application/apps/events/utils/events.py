@@ -2,6 +2,7 @@ import datetime
 import uuid
 from typing import Optional
 
+from django.apps import apps
 from django.contrib.auth.models import Group
 from django.db.models import Q
 
@@ -60,5 +61,28 @@ class EventsUtils:
             name = Events.objects.get(object_id=object_id).name
             Events.objects.get(object_id=object_id).delete()
             return name
+        except Exception:
+            return None
+
+    @staticmethod
+    def get_apps_count_of_published_events() -> Optional[list]:
+        """Получение списка """
+        try:
+            res = []
+            apps_model = apps.get_model('applications', 'Apps')
+            published_events = Events.objects.filter(event_status=PUBLISHED).order_by('-date_start')
+            if published_events.count() > 0:
+                cycle = published_events[:3]
+                if published_events.count() < 3:
+                    cycle = published_events
+                for event in cycle:
+                    apps_count = apps_model.objects.filter(event_id=event.object_id).count()
+                    res.append({
+                        'event_name': event.name,
+                        'event_date_range': f'{event.date_start.strftime('%d.%m.%Y')}-'
+                                            f'{event.date_end.strftime('%d.%m.%Y')}',
+                        'apps_count': apps_count
+                    })
+            return res
         except Exception:
             return None

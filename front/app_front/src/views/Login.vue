@@ -340,7 +340,7 @@ export default {
                 this.profileChangeError = data.error
                 this.$refs.dialog.show()
               } else {
-                showMessage('success', data.success, false)
+                showMessage('success', data.success)
               }
               preloader.usePreloader()
             })

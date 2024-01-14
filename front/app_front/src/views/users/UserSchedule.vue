@@ -3,7 +3,7 @@
     <slot>
       <ui5-card class="full-card">
         <ui5-card-header slot="header"
-                         title-text="Расписание ближайших занятий">
+                         title-text="Расписание мероприятий">
         </ui5-card-header>
         <div style="height:  80vh">
           <PaginationTable v-bind:tableMode="'None'"

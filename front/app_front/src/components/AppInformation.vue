@@ -1,5 +1,5 @@
 <template>
-  <ui5-toolbar v-if="lkUser">
+  <ui5-toolbar v-if="eventId">
     <ui5-toolbar-button v-if="['REVOKED', 'DRAFT', 'CREATED', 'REJECTED'].includes(appInfo.status)"
                         icon="save"
                         text="Сохранить"
@@ -13,12 +13,22 @@
                         text="Отозвать"
                         @click="e => appChangeStatus('REVOKED')" />
   </ui5-toolbar>
-  <ui5-toolbar v-if="!(lkUser)">
-    <ui5-toolbar-button icon="save" text="Сохранить" @click="e => appSave()" />
-    <ui5-toolbar-button icon="paper-plane" text="Отправить" />
-    <ui5-toolbar-button icon="undo" text="Отозвать" />
-    <ui5-toolbar-button icon="delete" text="Удалить" />
-  </ui5-toolbar>
+  <div v-if="appId">
+    <ui5-toolbar >
+      <ui5-toolbar-button v-if="appInfo.status === 'SHIPPED'"
+                          icon="accept"
+                          text="Принять"
+                          @click = "e => appAccepted()"
+      />
+      <ui5-toolbar-button v-if="appInfo.status === 'SHIPPED'"
+                          icon="decline"
+                          text="Отклонить"
+                          @click="e => showDialog()" />
+    </ui5-toolbar>
+    <ui5-popover ref="testPopover" placement-type="Bottom">
+      КЕКИС
+    </ui5-popover>
+  </div>
   <ui5-tabcontainer fixed
                     collapsed
                     @tab-select="e => changeTab(e.detail.tab._state.text)">
@@ -67,7 +77,9 @@
         </tr>
       </table>
     </div>
-    <div class="info-app-div user-app-div" v-bind:class="{'show-div': userAppDiv, 'hide-div': !(userAppDiv)}">
+    <div v-if="eventId"
+         class="info-app-div user-app-div"
+         v-bind:class="{'show-div': userAppDiv, 'hide-div': !(userAppDiv)}">
       <table v-if="userAppFields.length > 0" style="margin: 0 auto; font-size: 16px">
         <tr v-for="field in userAppFields">
           <td style="text-align: right; width: 25%; padding-right: 30px"><ui5-label show-colon>{{ field.name }}</ui5-label></td>
@@ -121,7 +133,21 @@
         </tr>
       </table>
     </div>
-    <div class="info-app-div" v-bind:class="{'show-div': participantAppDiv, 'hide-div': !(participantAppDiv)}">
+    <div v-if="appId"
+         class="info-app-div user-app-div"
+         v-bind:class="{'show-div': userAppDiv, 'hide-div': !(userAppDiv)}">
+      <ui5-table v-if="userAppFields.length > 0" style="border: 1px;margin: 0 auto; font-size: 16px">
+        <ui5-table-column slot="columns">Поле</ui5-table-column>
+        <ui5-table-column slot="columns">Значение</ui5-table-column>
+        <ui5-table-row v-for="field in userAppFields">
+          <ui5-table-cell style="text-align: right; width: 25%; padding-right: 30px"><ui5-label show-colon>{{ field.name }}</ui5-label></ui5-table-cell>
+          <ui5-table-cell style="text-align: center;">{{field.value}}</ui5-table-cell>
+        </ui5-table-row>
+      </ui5-table>
+    </div>
+    <div v-if="eventId"
+         class="info-app-div"
+         v-bind:class="{'show-div': participantAppDiv, 'hide-div': !(participantAppDiv)}">
       <PartAppsTable v-if="partAppFields.length > 0"
                      v-bind:canChange="canChange"
                      v-bind:eventId="eventId"
@@ -130,6 +156,16 @@
                      v-bind:recEditURL="'/api/v1/users/app_form_fields/part_app_edit/'+this.eventId+'/'"
                      v-bind:recDeleteURL="'/api/v1/users/app_form_fields/part_app_delete/'"
                      v-bind:addButton="true"
+                     v-bind:dataTableHeight="56"
+                     v-bind:partAppFields="partAppFields"  />
+    </div>
+    <div v-if="appId"
+         class="info-app-div"
+         v-bind:class="{'show-div': participantAppDiv, 'hide-div': !(participantAppDiv)}">
+      <PartAppsTable v-if="partAppFields.length > 0"
+                     v-bind:canChange="false"
+                     v-bind:recsURL="partAppRecsURL"
+                     v-bind:addButton="false"
                      v-bind:dataTableHeight="56"
                      v-bind:partAppFields="partAppFields"  />
     </div>
@@ -144,14 +180,15 @@ import InputFormFieldTypes from "../additional/consts/html_app_form_field_types.
 import PhoneField from "./PhoneField.vue";
 import app from "../App.vue";
 import PartAppsTable from "./tables/PartAppsTable.vue";
+import PasswordField from "./PasswordField.vue";
 
 export default {
   name: 'AppInformation',
-  components: {PartAppsTable, PhoneField, AppStatus, InputFormFieldTypes},
+  components: {PasswordField, PartAppsTable, PhoneField, AppStatus, InputFormFieldTypes},
   props: {
     eventId: {type: String},
+    showDialog: {type: Function},
     appId: {type: String},
-    lkUser: {type: Boolean},
     loaderFunc: {type: Function}
   },
   data() {
@@ -161,6 +198,7 @@ export default {
       selectedTab: 'main',
       profileData: {},
       appRequired: {},
+      componentAppMessage: '',
       appInfo: {
         date_create: null,
         date_update: null,
@@ -191,6 +229,7 @@ export default {
         case 'Заявка пользователя':
           this.selectedTab = 'user_app'
           this.getUserAppFields()
+          setTimeout(changeTableView, 25)
           this.userAppDiv = true
           break
 
@@ -201,8 +240,12 @@ export default {
     },
     async getAppInfo() {
       this.canChange = false
+      let url = this.$store.state.backendUrl+'/api/v1/users/apps/app_info/'+this.eventId+'/'
+      if (this.appId) {
+        url = this.$store.state.backendUrl+'/api/v1/admins/apps/app_info/'+this.appId+'/'
+      }
       apiRequest(
-          this.$store.state.backendUrl+'/api/v1/users/apps/app_info/'+this.eventId+'/',
+          url,
           'GET',
           true,
           null,
@@ -217,8 +260,15 @@ export default {
           })
     },
     async getAppRequiredInfo() {
+      let url = this.$store.state.backendUrl+'/api/v1/users/event_app_required/'
+      if (this.appId) {
+        url += this.appId
+      } else {
+        url += this.eventId
+      }
+      url += '/'
       apiRequest(
-          this.$store.state.backendUrl+'/api/v1/users/event_app_required/'+this.eventId+'/',
+          url,
           'GET',
           true,
           null,
@@ -253,8 +303,12 @@ export default {
           })
     },
     async getUserAppFields() {
+      let url = this.$store.state.backendUrl+'/api/v1/users/apps/user_app_fields/'+this.eventId+'/'
+      if (this.appId) {
+        url = this.$store.state.backendUrl+'/api/v1/admins/apps/user_app_fields/'+this.appId+'/'
+      }
       apiRequest(
-          this.$store.state.backendUrl+'/api/v1/users/apps/user_app_fields/'+this.eventId+'/',
+          url,
           'GET',
           true,
           null,
@@ -266,8 +320,12 @@ export default {
           })
     },
     async getPartAppFields() {
+      let url = this.$store.state.backendUrl+'/api/v1/users/app_form_fields/part/'+this.eventId+'/'
+      if (this.appId) {
+        url = this.$store.state.backendUrl+'/api/v1/admins/apps/part_form_fields/'+this.appId+'/'
+      }
       apiRequest(
-          this.$store.state.backendUrl+'/api/v1/users/app_form_fields/part/'+this.eventId+'/',
+          url,
           'GET',
           true,
           null,
@@ -336,7 +394,7 @@ export default {
             value = value.slice(0, -1)
           }
         }
-        if (value.length === 0) {
+        if (!(field.type.includes('profile_')) && value.length === 0) {
           showMessage('error', 'Заполните все поля заявки пользователя')
           value_empty = true
           return false
@@ -373,14 +431,22 @@ export default {
     },
     async appChangeStatus(new_status) {
       this.loaderFunc()
+      let body = {
+        entity_id: this.eventId,
+        status: new_status,
+        message: this.appInfo.message
+      }
+      if (this.appId) {
+        body['entity_id'] = this.appId
+      }
+      if (new_status === 'REJECTED') {
+        body['message'] = this.componentAppMessage
+      }
       apiRequest(
           this.$store.state.backendUrl+'/api/v1/users/apps/status_change/',
           'POST',
           true,
-          {
-            event_id: this.eventId,
-            status: new_status
-          },
+          body,
           false,
           true
       )
@@ -393,12 +459,24 @@ export default {
             }
             this.loaderFunc()
           })
+    },
+    appAccepted() {
+      if (confirm('Вы уверены, что хотите принять заявку?')) {
+        this.appChangeStatus('ACCEPTED')
+      }
+    },
+    appDecline(appMessage) {
+      this.componentAppMessage = appMessage
+      this.appChangeStatus('REJECTED')
     }
   },
   mounted() {
     this.getAppInfo()
     this.getAppRequiredInfo()
-    if (this.lkUser) {
+    if (this.appId) {
+      this.partAppRecsURL = '/api/v1/admins/apps/part_form_recs/'+this.appId+'/'
+    }
+    if (this.eventId) {
       this.getProfileInfo()
     }
   }

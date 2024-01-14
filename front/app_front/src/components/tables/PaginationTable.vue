@@ -89,6 +89,7 @@
                               v-bind:phoneStateText="''"
                               v-bind:changePhoneAction="filterPhone" />
                   <ui5-input v-if="obj.type !== 'Phone'"
+                             :ref="'filter_'+obj.field"
                              :type="obj.type"
                              @change="e => filterRecs(e.target.value, obj.field)" />
                 </template>
@@ -96,6 +97,7 @@
                   <div>
                     <div style="display: inline-block">
                       <ui5-switch :text-on="obj.field === 'sex' && 'М'"
+                                  :ref="'filter_'+obj.field"
                                   :text-off="obj.field === 'sex' && 'Ж'"
                                   @change="e => filterRecs(e.target._state.checked, obj.field)"/>
                     </div>
@@ -107,18 +109,22 @@
                   </div>
                 </template>
                 <ui5-select v-if="['select', 'multiple'].includes(obj.ui)"
+                            :ref="'filter_'+obj.field"
                             @change="e => filterRecs(e.detail.selectedOption.innerText, obj.field)">
                   <ui5-option v-for="option in obj.options">
                     {{option.name}}
                   </ui5-option>
                 </ui5-select>
                 <ui5-date-picker v-if="obj.ui === 'date_picker'"
+                                 :ref="'filter_'+obj.field"
                                  format-pattern="dd.MM.yyyy"
                                  @change="e => filterRecs(e.target.value, obj.field)" />
                 <ui5-datetime-picker v-if="obj.ui === 'datetime_picker'"
+                                     :ref="'filter_'+obj.field"
                                      format-pattern="dd.MM.yyyy HH:mm"
                                      @change="e => filterRecs(e.target.value, obj.field)" />
                 <ui5-daterange-picker v-if="obj.ui === 'date_range_picker'"
+                                      :ref="'filter_'+obj.field"
                                       format-pattern="dd.MM.yyyy"
                                       @change="e => filterRecs(e.target.value, obj.field)"/>
               </ui5-table-cell>
@@ -249,7 +255,7 @@
                   </div>
                   <div v-if="!([true, false].includes(row[field.alias]))">
                     <ui5-checkbox v-if="field.alias === 'checkbox'"
-                                  :checked="checkBoxRecs.includes(row.object_id)"
+                                  :checked="(checkBoxRecs.includes(row.object_id)) || (checkBoxRecs.includes('all'))"
                                   @change="e => checkBoxRecAction(row.object_id)"/>
                     <template v-if="field.alias !== 'checkbox'">
                       <div v-if="row[field.alias] === null">-</div>
@@ -447,6 +453,7 @@ export default {
   components: {AppStatus, EventStatus, JournalEventResultBadge, PhoneField, SexBadge, PasswordField},
   props: {
     tableMode: {type: String},
+    outsideFilterString: {type: String},
     recsURL: {type: String},
     recAddURL: {type: String},
     recEditURL: {type: String},
@@ -466,10 +473,11 @@ export default {
   },
   data() {
     return {
+      checkInit: true,
       noAddEditField: ['event_status',],
+      filterString: this.outsideFilterString || '',
       recs: [],
       states: [],
-      filterString: '',
       additionalData: {},
       tableBusy: true,
       fieldsList: [],
@@ -492,10 +500,7 @@ export default {
         noHeadTable()
         try {
           document.querySelector('#pagination_cell').shadowRoot.querySelector('td').colSpan = this.colCount
-        } catch (e) {
-
-        }
-
+        } catch (e) {}
         this.getRecs(0, this.recCount)
       }, 25)
     },
@@ -520,9 +525,34 @@ export default {
       setTimeout(changeTableView, 25)
     },
     checkBoxRecAction(value) {
-
+      if (value === 'all') {
+        if (this.checkBoxRecs.includes('all')) {
+          this.checkBoxRecs = []
+        } else {
+          this.checkBoxRecs = ['all']
+        }
+      } else {
+        if (this.checkBoxRecs.includes(value)) {
+          let index = this.checkBoxRecs.indexOf(value)
+          this.checkBoxRecs.splice(index, 1)
+        } else {
+          this.checkBoxRecs.push(value)
+        }
+      }
     },
     async getRecs(start, size) {
+      if (this.checkInit) {
+        if (this.outsideFilterString) {
+          let initFilterArr = this.outsideFilterString.split('&')
+          initFilterArr.map((rec) => {
+            if (rec.length > 0) {
+              let recArr = rec.split('=')
+              this.$refs['filter_'+recArr[0]][0].value=recArr[1]
+            }
+          })
+        }
+        this.checkInit = false
+      }
       let url = this.$store.state.backendUrl+this.recsURL+'?size='+size+'&start='+start
       if (this.filterString.length > 0) {
         url += this.filterString
@@ -545,6 +575,7 @@ export default {
               this.pageTotal = Math.ceil(this.recsTotalCount/this.recCount)
             }
             this.tableBusy = false
+
           })
     },
     filterPhone() {
@@ -821,7 +852,9 @@ export default {
     },
   },
   mounted() {
-    this.init()
+    this.$nextTick(function () {
+      this.init()
+    })
   }
 }
 </script>

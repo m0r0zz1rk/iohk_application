@@ -290,7 +290,7 @@ export default {
           value = this.$refs['add_' + field.object_id][0].componentPhoneField
         } else {
         }
-        if (value.length === 0) {
+        if (!(field.type.includes('profile_')) && value.length === 0) {
           blank=true
         }
         field = {
@@ -347,7 +347,7 @@ export default {
           value = this.$refs['edit_' + field.object_id][0].componentPhoneField
         } else {
         }
-        if (value.length === 0) {
+        if (!(field.type.includes('profile_')) && value.length === 0) {
           blank=true
         }
         field = {

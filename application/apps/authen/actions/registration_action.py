@@ -134,6 +134,8 @@ class RegistrationAction:
                     if key not in ['password', 'role']:
                         if key == 'state':
                             profile_data['state_id'] = value
+                        elif key == 'birthday':
+                            profile_data['birthday'] = du.get_date_value_in_dict_by_key('birthday', self.data)
                         else:
                             profile_data[key] = value
                 user_profile = ProfileUtils.get_profile_by_user_id(self.django_user_id)
