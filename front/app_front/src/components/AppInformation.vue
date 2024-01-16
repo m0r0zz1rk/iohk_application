@@ -24,15 +24,17 @@
                           icon="decline"
                           text="Отклонить"
                           @click="e => showDialog()" />
+      <ui5-toolbar-button v-if="['ACCEPTED', 'COMPLETED'].includes(appInfo.status)"
+                          icon="complete"
+                          text="Выставить результат"
+                          @click="e => setResult(appInfo.result)" />
     </ui5-toolbar>
-    <ui5-popover ref="testPopover" placement-type="Bottom">
-      КЕКИС
-    </ui5-popover>
   </div>
   <ui5-tabcontainer fixed
                     collapsed
                     @tab-select="e => changeTab(e.detail.tab._state.text)">
     <ui5-tab text="Основная информация" :selected="selectedTab === 'main'" />
+    <ui5-tab text="Результат" v-if="appInfo.status === 'COMPLETED'" :selected="selectedTab === 'result'" />
     <template v-if="(appRequired.user_app) && (appRequired.part_app)">
       <ui5-tab text="Заявка пользователя" :selected="selectedTab === 'user_app'" />
       <ui5-tab text="Заявки участников от пользователя" :selected="selectedTab === 'part_app'" />
@@ -76,6 +78,9 @@
           </td>
         </tr>
       </table>
+    </div>
+    <div v-if="appInfo.status === 'COMPLETED'" class="info-app-div" v-bind:class="{'show-div': resultDiv, 'hide-div': !(resultDiv)}">
+      <div style="padding-left: 15px;" v-html="appInfo.result" />
     </div>
     <div v-if="eventId"
          class="info-app-div user-app-div"
@@ -188,6 +193,7 @@ export default {
   props: {
     eventId: {type: String},
     showDialog: {type: Function},
+    setResult: {type: Function},
     appId: {type: String},
     loaderFunc: {type: Function}
   },
@@ -199,17 +205,20 @@ export default {
       profileData: {},
       appRequired: {},
       componentAppMessage: '',
+      componentAppResult: '',
       appInfo: {
         date_create: null,
         date_update: null,
         event: '',
         status: '',
-        message: ''
+        message: '',
+        result: ''
       },
       userAppFields: [],
       partAppRecsURL: '/api/v1/users/app_form_fields/part_recs/'+this.eventId+'/',
       partAppFields: [],
       infoDiv: true,
+      resultDiv: false,
       userAppDiv: false,
       participantAppDiv: false
     }
@@ -217,6 +226,7 @@ export default {
   methods: {
     changeTab(tab) {
       this.infoDiv = false
+      this.resultDiv = false
       this.userAppDiv = false
       this.participantAppDiv = false
       switch (tab) {
@@ -224,6 +234,11 @@ export default {
           this.selectedTab = 'main'
           this.getAppInfo()
           this.infoDiv = true
+          break
+
+        case 'Результат':
+          this.selectedTab = 'result'
+          this.resultDiv = true
           break
 
         case 'Заявка пользователя':
@@ -434,13 +449,23 @@ export default {
       let body = {
         entity_id: this.eventId,
         status: new_status,
-        message: this.appInfo.message
+        message: this.appInfo.message,
+        result: this.appInfo.result
       }
       if (this.appId) {
         body['entity_id'] = this.appId
       }
-      if (new_status === 'REJECTED') {
-        body['message'] = this.componentAppMessage
+      switch(new_status) {
+        case 'REJECTED':
+          body['message'] = this.componentAppMessage
+          break
+
+        case 'COMPLETED':
+          body['result'] = this.componentAppResult
+          break
+
+        default:
+          break
       }
       apiRequest(
           this.$store.state.backendUrl+'/api/v1/users/apps/status_change/',
@@ -468,6 +493,10 @@ export default {
     appDecline(appMessage) {
       this.componentAppMessage = appMessage
       this.appChangeStatus('REJECTED')
+    },
+    appResult(appResult) {
+      this.componentAppResult = appResult
+      this.appChangeStatus('COMPLETED')
     }
   },
   mounted() {

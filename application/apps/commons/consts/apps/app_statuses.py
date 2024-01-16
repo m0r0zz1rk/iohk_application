@@ -4,6 +4,7 @@ SHIPPED = 'SHIPPED'
 ACCEPTED = 'ACCEPTED'
 REJECTED = 'REJECTED'
 REVOKED = 'REVOKED'
+COMPLETED = 'COMPLETED'
 
 APP_STATUSES = (
     (DRAFT, 'Черновик'),
@@ -11,5 +12,6 @@ APP_STATUSES = (
     (SHIPPED, 'Отправлена'),
     (ACCEPTED, 'Принята'),
     (REJECTED, 'Отклонена'),
-    (REVOKED, 'Отозвана')
+    (REVOKED, 'Отозвана'),
+    (COMPLETED, 'Завершена')
 )

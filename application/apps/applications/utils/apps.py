@@ -5,7 +5,8 @@ from typing import Optional
 from apps.applications.models import Apps
 from apps.authen.models import Profiles
 from apps.authen.utils.profile import ProfileUtils
-from apps.commons.consts.apps.app_statuses import APP_STATUSES, DRAFT, CREATED, SHIPPED, ACCEPTED, REJECTED, REVOKED
+from apps.commons.consts.apps.app_statuses import APP_STATUSES, DRAFT, CREATED, SHIPPED, ACCEPTED, REJECTED, REVOKED, \
+    COMPLETED
 
 
 class AppsUtils:
@@ -77,29 +78,42 @@ class AppsUtils:
     def change_app_status(
             app_id: uuid,
             new_status: APP_STATUSES,
-            message=None
+            message=None,
+            result=None
     ) -> bool:
         """Изменение статуса заявки"""
         try:
             app = Apps.objects.get(object_id=app_id)
             app.date_update = datetime.date.today()
-            if new_status == DRAFT:
-                return False
-            elif new_status == CREATED:
-                if app.status in [DRAFT, CREATED, REJECTED, REVOKED]:
-                    app.status = CREATED
-            elif new_status == SHIPPED:
-                if app.status == CREATED:
-                    app.status = SHIPPED
-            elif new_status in [ACCEPTED, REJECTED]:
-                if app.status == SHIPPED:
-                    app.status = new_status
-            elif new_status == REVOKED:
-                app.status = REVOKED
-            else:
-                return False
+            match new_status:
+                case 'DRAFT':
+                    return False
+
+                case 'CREATED':
+                    if app.status in [DRAFT, CREATED, REJECTED, REVOKED]:
+                        app.status = CREATED
+
+                case 'SHIPPED':
+                    if app.status == CREATED:
+                        app.status = SHIPPED
+
+                case 'ACCEPTED' | 'REJECTED':
+                    if app.status in [SHIPPED, COMPLETED]:
+                        app.status = new_status
+
+                case 'REVOKED':
+                    app.status = REVOKED
+
+                case 'COMPLETED':
+                    if app.status in [ACCEPTED, COMPLETED]:
+                        app.status = COMPLETED
+
+                case _:
+                    return False
             if message is not None:
                 app.message = message
+            if result is not None:
+                app.result = result
             app.save()
             return True
         except Exception:

@@ -46,7 +46,8 @@ class AppStatusViewSet(viewsets.ViewSet):
                 AppsUtils.change_app_status(
                     app.object_id,
                     serialize.data['status'],
-                    serialize.data['message']
+                    serialize.data['message'],
+                    serialize.data['result']
                 )
                 self.journal.write(
                     self.pu.get_display_name('django_user_id', request.user.id),

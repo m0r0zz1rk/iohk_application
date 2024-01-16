@@ -2,6 +2,8 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from tinymce import models as tinymce_models
+
 from apps.applications.utils.app_fields import AppFieldsUtils
 from apps.applications.utils.app_form_fields import AppFormFieldsUtils
 from apps.authen.models import Profiles
@@ -42,6 +44,12 @@ class Apps(BaseTable):
         max_length=2000,
         verbose_name='Сообщение',
         blank=True
+    )
+    result = tinymce_models.HTMLField(
+        blank=True,
+        null=True,
+        default='',
+        verbose_name='Результат участия'
     )
 
     def __str__(self):

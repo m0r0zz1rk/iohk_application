@@ -1,5 +1,5 @@
 <template>
-  <Editor v-if="editorText.length > 0"
+  <Editor v-if="(editorText.length > 0) && (full)"
       v-model="editorText"
       :api-key="TinyMCEAPIKey"
       :init="{
@@ -25,6 +25,27 @@
          }
       }"
   />
+  <Editor v-if="!(full)"
+          v-model="editorText"
+          :api-key="TinyMCEAPIKey"
+          :init="{
+         height: editorHeight,
+         menubar: 'edit table',
+         language: 'ru',
+         plugins: [
+           'advlist autolink lists link image charmap print preview anchor',
+           'searchreplace visualblocks code fullscreen',
+           'insertdatetime media table paste code help wordcount'
+         ],
+         toolbar:
+           'undo redo | bold italic underline strikethrough | \
+           fontselect fontsizeselect formatselect | \
+           alignleft aligncenter alignright alignjustify | \
+           outdent indent |  numlist bullist checklist | \
+           forecolor backcolor casechange permanentpen formatpainter removeformat | \
+           pagebreak | charmap emoticons | preview save',
+      }"
+  />
 </template>
 
 <script>
@@ -35,6 +56,7 @@ export default {
   name: 'TinyMCE',
   components: {Editor},
   props: {
+    full: {type: Boolean},
     Information: {type: String},
     additionalData: {type: Object},
     editorHeight: {type: Number}
@@ -47,7 +69,9 @@ export default {
   },
   methods: {
     init() {
-      this.editorText = this.Information
+      if (this.Information) {
+        this.editorText = this.Information
+      }
     },
     async imagesUploadHandler(blobInfo, success, failure) {
       let formRequest = new FormData()

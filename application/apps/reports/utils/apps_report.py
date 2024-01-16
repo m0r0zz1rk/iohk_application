@@ -53,11 +53,11 @@ class AppsReportUtils:
         """Заполнение листов данными из заявок"""
         try:
             excel = []
+            fields = self._get_fields_queryset(False)
+            content = self._apps_header_row(False)
+            applications = (self.apps_model.objects.filter(event_id=self.event_id).
+                            order_by('profile__surname', 'profile__name', 'profile__patronymic'))
             if self.apps_types in ['user', 'all']:
-                fields = self._get_fields_queryset(True)
-                content = self._apps_header_row(True)
-                applications = (self.apps_model.objects.filter(event_id=self.event_id).
-                                order_by('profile__surname', 'profile__name', 'profile__patronymic'))
                 for app_index, app in enumerate(applications, start=2):
                     for field_index, field in enumerate(fields, start=1):
                         value = ''
@@ -78,10 +78,6 @@ class AppsReportUtils:
                     'sheet_data': content
                 })
             if self.apps_types in ['part', 'all']:
-                fields = self._get_fields_queryset(False)
-                content = self._apps_header_row(False)
-                applications = (self.apps_model.objects.filter(event_id=self.event_id).
-                                order_by('profile__surname', 'profile__name', 'profile__patronymic'))
                 rows = self.app_form_fields_model.objects.filter(app_id=applications.first().object_id). \
                     filter(field_id=fields.first().object_id).values_list('rec_id', flat=True).distinct()
                 counter = 0

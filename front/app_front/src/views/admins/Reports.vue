@@ -372,7 +372,32 @@ export default {
         'filters': this.filtersArray,
         'total_row': this.$refs.total_row_switch._state.checked
       }
-      console.log(data)
+      this.countProcess = true
+      apiRequest(
+          this.$store.state.backendUrl+'/api/v1/reports/count_report/',
+          'POST',
+          true,
+          data,
+          false,
+          true
+      )
+          .then(resp => {
+            if (resp.status === 200) {
+              return resp.blob()
+            } else {
+              showMessage('error', 'Произошла ошибка при генерации отчета. Повторите попытку позже')
+              this.appsProcess = false
+              return false
+            }
+          })
+          .then(blob => {
+            let a = document.createElement('a')
+            a.href = window.URL.createObjectURL(blob)
+            a.download = 'Количественный отчет.xlsx'
+            a.click()
+            showMessage('success', 'Отчет успешно сформирован')
+            this.countProcess = false
+          })
     }
   },
   mounted() {

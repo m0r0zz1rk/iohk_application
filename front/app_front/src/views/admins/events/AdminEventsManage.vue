@@ -60,6 +60,7 @@
               Сохранить изменения
             </ui5-button><br/><br/>
             <TinyMCE ref='infoTinyMCE'
+                     v-bind:full="true"
                      v-bind:Information="Information"
                      v-bind:additional-data="{name: selectedEvent.name}"
                      v-bind:editorHeight="500" />

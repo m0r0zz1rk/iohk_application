@@ -54,6 +54,15 @@ class EventsUtils:
         except Exception:
             return None
 
+    def get_event_display_name(self, event_id: uuid) -> Optional[str]:
+        """Получение имени и сроков проведения мероприятия по object_id"""
+        try:
+            event = self.get_event_by_object_id(event_id)
+            return (f'{event.name} ({event.date_start.strftime('%d.%m.%Y')}-'
+                    f'{event.date_end.strftime('%d.%m.%Y')})')
+        except Exception:
+            return None
+
     @staticmethod
     def delete_event_by_object_id(object_id: uuid) -> Optional[str]:
         """Удаление мероприятия, получение наименования"""

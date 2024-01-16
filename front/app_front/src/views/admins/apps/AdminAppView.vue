@@ -9,6 +9,7 @@
                         v-if="appId.length > 0"
                         v-bind:loaderFunc="useLoader"
                         v-bind:showDialog="openDialog"
+                        v-bind:setResult="openResultDialog"
                         v-bind:appId="appId" />
       </ui5-card>
     </slot>
@@ -32,19 +33,43 @@
       </ui5-button>
     </div>
   </ui5-dialog>
+  <ui5-dialog ref="resultDialog">
+    <ui5-bar slot="header">
+      <ui5-title level="H5" slot="startContent">Результат по заявке</ui5-title>
+      <ui5-button design="Emphasized"
+                  slot="endContent"
+                  icon="decline"
+                  @click="e => this.$refs.resultDialog.close(e.current)"></ui5-button>
+    </ui5-bar>
+    <TinyMCE :key="componentKey" ref='resultTinyMCE'
+             v-bind:full="false"
+             v-bind:Information="resultHTML"
+             v-bind:editorHeight="500" />
+    <div slot="footer" class="popover-footer">
+      <div style="flex: 1;"></div>
+      <ui5-button icon="complete"
+                  design="Emphasized"
+                  @click="e => appResult(e)">
+        Установить результат
+      </ui5-button>
+    </div>
+  </ui5-dialog>
 </template>
 
 <script>
 
 import LkBase from "../../../components/LkBase.vue";
 import AppInformation from "../../../components/AppInformation.vue";
+import TinyMCE from "../../../components/TinyMCE.vue";
 
 export default {
   name: 'AdminAppView',
-  components: {AppInformation, LkBase},
+  components: {TinyMCE, AppInformation, LkBase},
   data() {
     return {
-      appId: this.$route.params.appId
+      componentKey: 0,
+      appId: this.$route.params.appId,
+      resultHTML: ''
     }
   },
   methods: {
@@ -58,6 +83,19 @@ export default {
       this.$refs.rejectedDialog.close(e.current)
       this.$refs.appInfoComponent.appDecline(
           this.$refs.appMessage.value
+      )
+    },
+    openResultDialog(result) {
+      this.resultHTML = result
+
+      console.log(this.resultHTML)
+      this.$refs.resultDialog.show()
+      this.componentKey += 1
+    },
+    appResult(e) {
+      this.$refs.resultDialog.close(e.current)
+      this.$refs.appInfoComponent.appResult(
+          this.$refs.resultTinyMCE.editorText
       )
     }
   }
