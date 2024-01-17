@@ -632,12 +632,16 @@ export default {
               break
 
             case 'select':
-              try {
-                value = this.$refs['add_'+column.field][0].selectedOption.innerText
-              } catch (e) {
-                if (column.add_required) {
-                  add_required = true
-                  return false
+              if (column.field === 'event_status') {
+                value = 'CREATED'
+              } else {
+                try {
+                  value = this.$refs['add_'+column.field][0].selectedOption.innerText
+                } catch (e) {
+                  if (column.add_required) {
+                    add_required = true
+                    return false
+                  }
                 }
               }
               break

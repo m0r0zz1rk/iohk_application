@@ -1,11 +1,12 @@
+from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
+from apps.celery_app.tasks import email_for_event_change_status_task
 from apps.events.filters.events_filter import EventsFilter
-from apps.events.serializers.events_serializer import EventsPaginationSerializer, EventsSerializer, EventSaveSerializer, \
-    EventModelSerializer, EventGetSerializer
+from apps.events.serializers.events_serializer import EventsPaginationSerializer, EventsSerializer, \
+    EventSaveSerializer, EventModelSerializer
 from apps.commons.consts.journals.journal_event_results import SUCCESS, ERROR
 from apps.commons.consts.journals.journal_rec_types import ADMINS
 from apps.commons.pagination import CustomPagination
@@ -184,52 +185,58 @@ class EventsViewSet(viewsets.ModelViewSet):
         serialize = EventSaveSerializer(data=request.data)
         if serialize.is_valid(raise_exception=True):
             try:
-                if self.dateu.check_cross_and_second_after_first_date_ranges(
-                        serialize.data['app_date_range'],
-                        serialize.data['date_range']
-                ):
-                    self.journal.write(
-                        'Система',
-                        ERROR,
-                        f'Ошибка при добавлении мероприятия: '
-                        f'Некорректные временные интервалы'
-                    )
-                    return self.ru.bad_request_response('Сроки подачи заявок должны быть окончены'
-                                                        ' раньше сроков проведения мероприятия')
-                event = EventsUtils.get_event_by_object_id(self.kwargs['object_id'])
-                apps_dates = self.dateu.split_date_range(serialize.data['app_date_range'])
-                event_dates = self.dateu.split_date_range(serialize.data['date_range'])
-                event_data = {
-                    'app_date_start': apps_dates[0].date(),
-                    'app_date_end': apps_dates[1].date(),
-                    'date_start': event_dates[0].date(),
-                    'date_end': event_dates[1].date(),
-                    'categories': ParticipantCategoryUtils.get_object_id_array_by_names(serialize.data['categories'])
-                }
-                for key, value in serialize.data.items():
-                    if key not in ['app_date_range', 'date_range', 'categories']:
-                        if key == 'event_type':
-                            print(value)
-                            event_data['event_type'] = EventsTypesUtils.get_event_type_object_id_by_name(value)
-                        else:
-                            event_data[key] = value
-                save_serialize = EventModelSerializer(event, data=event_data, partial=True)
-                if save_serialize.is_valid(raise_exception=True):
-                    save_serialize.save()
-                    self.journal.write(
-                        self.pu.get_display_name('django_user_id', request.user.id),
-                        SUCCESS,
-                        f'Изменена базовая информация мероприятия: '
-                        f'{event_data['name']}'
-                    )
-                    return self.ru.ok_response('Информация о мероприятии успешно изменена')
-                else:
-                    self.journal.write(
-                        'Система',
-                        ERROR,
-                        f'Ошибка при изменении базовой информации о мероприятии: {serialize.errors}'
-                    )
-                    return self.ru.bad_request_response(serialize.errors)
+                with transaction.atomic():
+                    if self.dateu.check_cross_and_second_after_first_date_ranges(
+                            serialize.data['app_date_range'],
+                            serialize.data['date_range']
+                    ):
+                        self.journal.write(
+                            'Система',
+                            ERROR,
+                            f'Ошибка при добавлении мероприятия: '
+                            f'Некорректные временные интервалы'
+                        )
+                        return self.ru.bad_request_response('Сроки подачи заявок должны быть окончены'
+                                                            ' раньше сроков проведения мероприятия')
+                    event = EventsUtils.get_event_by_object_id(self.kwargs['object_id'])
+                    apps_dates = self.dateu.split_date_range(serialize.data['app_date_range'])
+                    event_dates = self.dateu.split_date_range(serialize.data['date_range'])
+                    event_data = {
+                        'app_date_start': apps_dates[0].date(),
+                        'app_date_end': apps_dates[1].date(),
+                        'date_start': event_dates[0].date(),
+                        'date_end': event_dates[1].date(),
+                        'categories': ParticipantCategoryUtils.get_object_id_array_by_names(serialize.data['categories'])
+                    }
+                    for key, value in serialize.data.items():
+                        if key not in ['app_date_range', 'date_range', 'categories']:
+                            if key == 'event_type':
+                                event_data['event_type'] = EventsTypesUtils.get_event_type_object_id_by_name(value)
+                            else:
+                                event_data[key] = value
+                    if event.event_status != serialize.data['event_status']:
+                        email_for_event_change_status_task.delay(
+                            self.kwargs['object_id'],
+                            serialize.data['event_status']
+                        )
+                    save_serialize = EventModelSerializer(event, data=event_data, partial=True)
+                    if save_serialize.is_valid(raise_exception=True):
+                        save_serialize.save()
+
+                        self.journal.write(
+                            self.pu.get_display_name('django_user_id', request.user.id),
+                            SUCCESS,
+                            f'Изменена базовая информация мероприятия: '
+                            f'{event_data['name']}'
+                        )
+                        return self.ru.ok_response('Информация о мероприятии успешно изменена')
+                    else:
+                        self.journal.write(
+                            'Система',
+                            ERROR,
+                            f'Ошибка при изменении базовой информации о мероприятии: {serialize.errors}'
+                        )
+                        return self.ru.bad_request_response(serialize.errors)
             except Exception:
                 error = ExceptionHandling.get_traceback()
                 self.journal.write(

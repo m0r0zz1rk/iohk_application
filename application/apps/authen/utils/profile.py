@@ -190,3 +190,11 @@ class ProfileUtils:
     def get_all_profiles():
         """Получение всех профилей пользователей"""
         return Profiles.objects.all().order_by('surname', 'name', 'patronymic')
+
+    @staticmethod
+    def get_profile_by_user_email(email: str) -> Optional[Profiles]:
+        """Получение display name пользователя по полученному email"""
+        if User.objects.filter(email=email).exists():
+            if Profiles.objects.filter(django_user=User.objects.get(email=email)).exists():
+                return Profiles.objects.get(django_user=User.objects.get(email=email))
+        return None

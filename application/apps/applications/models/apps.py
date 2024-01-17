@@ -66,17 +66,17 @@ class Apps(BaseTable):
 def create_app_fields(instance, created, **kwargs):
     """Создание заполненных полей заявки пользователя при создании заявки"""
     if created:
-        #try:
-        app_required = EventsAppsRequiredUtils.get_apps_required_for_event(instance.event_id)
-        if app_required.user_app_required:
-            fields = AppFieldsUtils.get_app_fields_for_event(instance.event_id, 'user_app')
-            if fields is not None and fields.count() > 0:
-                for field in fields:
-                    AppFormFieldsUtils.create_new_rec(
-                        instance.object_id,
-                        field.object_id,
-                        True,
-                        ''
-                    )
-       #except Exception:
-       #    pass
+        try:
+            app_required = EventsAppsRequiredUtils.get_apps_required_for_event(instance.event_id)
+            if app_required.user_app_required:
+                fields = AppFieldsUtils.get_app_fields_for_event(instance.event_id, 'user_app')
+                if fields is not None and fields.count() > 0:
+                    for field in fields:
+                        AppFormFieldsUtils.create_new_rec(
+                            instance.object_id,
+                            field.object_id,
+                            True,
+                            ''
+                        )
+        except Exception:
+            pass

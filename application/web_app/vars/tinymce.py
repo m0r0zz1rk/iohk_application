@@ -1,4 +1,4 @@
-from .journal import *
+from .celery import *
 
 TINYMCE_DEFAULT_CONFIG = {
     "height": "650px",

@@ -18,6 +18,7 @@ class Events(BaseTable):
         verbose_name='Наименование мероприятия'
     )
     description = models.TextField(
+        blank=True,
         verbose_name='Краткое пояснение'
     )
     event_type = models.ForeignKey(
@@ -57,6 +58,12 @@ class Events(BaseTable):
     def __str__(self):
         return (f'{self.name} ({self.date_start.strftime('%d.%m.%Y')} - '
                f'{self.date_end.strftime('%d.%m.%Y')})')
+
+    def check_date_in_app_dates(self) -> bool:
+        """Проверка нахождения текущей даты в сроках подачи заявки"""
+        if self.app_date_start <= datetime.date.today() <= self.app_date_end:
+            return True
+        return False
 
     class Meta:
         verbose_name = 'Мероприятие'

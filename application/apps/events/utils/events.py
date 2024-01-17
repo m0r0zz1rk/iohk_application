@@ -95,3 +95,15 @@ class EventsUtils:
             return res
         except Exception:
             return None
+
+    def get_list_of_potential_user_emails(self, event_id: uuid) -> Optional[list]:
+        """Получение списка email потенциальных участников-пользователей АИС"""
+        #try:
+        email_list = []
+        event = self.get_event_by_object_id(event_id)
+        for category in event.categories.all():
+            for user in category.group.user_set.all():
+                email_list.append(user.email)
+        return email_list
+        #except Exception:
+        #    return None

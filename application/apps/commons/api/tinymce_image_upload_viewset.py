@@ -27,19 +27,20 @@ class TinyMCEImagesUploadViewSet(viewsets.ViewSet):
             '200': 'Изображение успешно загружено',
         }
     )
-    def ImageUpload(self, request):
-        """Загруза изображений"""
+    def image_upload(self, request, *args, **kwargs):
+        """Загрузка изображений"""
+        print(request)
         try:
             file = request.FILES.get('file')
         except BaseException:
             return self.ru.bad_request_response('Ошибка при получении файла. '
                                                 'Повторите попытку или выберите другой файл')
-        #try:
-        media_root = DjangoUtils().get_parameter_from_settings('MEDIA_ROOT')
-        filename = (f'{media_root}/images/{request.data['name']}/'
-                    f'{datetime.datetime.now().strftime("%d.%m.%Y")}.jpg')
-        file_path = default_storage.save(filename, file)
-        return self.ru.ok_response_dict({'location': f'/media/{file_path}'})
-        #except BaseException:
-        #    return self.ru.bad_request_response('Произошла ошибка при сохранении файла, '
-        #                                        'повторите попытку позже')
+        try:
+            media_root = DjangoUtils().get_parameter_from_settings('MEDIA_ROOT')
+            filename = (f'{media_root}/images/{request.data['name']}/'
+                        f'{datetime.datetime.now().strftime("%d.%m.%Y")}.jpg')
+            file_path = default_storage.save(filename, file)
+            return self.ru.ok_response_dict({'location': f'/media/{file_path}'})
+        except BaseException:
+            return self.ru.bad_request_response('Произошла ошибка при сохранении файла, '
+                                                'повторите попытку позже')

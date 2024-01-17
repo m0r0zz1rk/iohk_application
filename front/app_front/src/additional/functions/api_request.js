@@ -1,7 +1,9 @@
 export function apiRequest(url, method, token_required, body, body_form, only_resp, check_admin) {
     let headers = {
         'X-CSRFToken': getCookie("csrftoken"),
-        'Content-Type': 'web_app/json;charset=UTF-8'
+    }
+    if (!(body_form)) {
+        headers['Content-Type'] = 'web_app/json;charset=UTF-8'
     }
     if (token_required) {
         headers['Authorization'] = 'Token '+getCookie('iohk_token')

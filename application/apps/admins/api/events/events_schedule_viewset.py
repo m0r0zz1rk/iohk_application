@@ -48,6 +48,8 @@ class EventsScheduleViewSet(viewsets.ModelViewSet):
         """Получение расписания мероприятия"""
         try:
             queryset = EventsScheduleUtils.get_event_schedule(self.kwargs['event_id'])
+            if queryset is None:
+                return self.ru.ok_response_dict({})
             page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)

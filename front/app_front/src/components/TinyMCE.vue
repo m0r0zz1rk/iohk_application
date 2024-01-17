@@ -1,5 +1,5 @@
 <template>
-  <Editor v-if="(editorText.length > 0) && (full)"
+  <Editor
       v-model="editorText"
       :api-key="TinyMCEAPIKey"
       :init="{
@@ -21,29 +21,8 @@
            insertfile image pageembed template link codesample | \
            a11ycheck ltr rtl',
          images_upload_handler: (blobInfo, success, failure) => {
-            imagesUploadHandler(blobInfo, success, failure)
+           imagesUploadHandler(blobInfo, success, failure)
          }
-      }"
-  />
-  <Editor v-if="!(full)"
-          v-model="editorText"
-          :api-key="TinyMCEAPIKey"
-          :init="{
-         height: editorHeight,
-         menubar: 'edit table',
-         language: 'ru',
-         plugins: [
-           'advlist autolink lists link image charmap print preview anchor',
-           'searchreplace visualblocks code fullscreen',
-           'insertdatetime media table paste code help wordcount'
-         ],
-         toolbar:
-           'undo redo | bold italic underline strikethrough | \
-           fontselect fontsizeselect formatselect | \
-           alignleft aligncenter alignright alignjustify | \
-           outdent indent |  numlist bullist checklist | \
-           forecolor backcolor casechange permanentpen formatpainter removeformat | \
-           pagebreak | charmap emoticons | preview save',
       }"
   />
 </template>
@@ -56,7 +35,6 @@ export default {
   name: 'TinyMCE',
   components: {Editor},
   props: {
-    full: {type: Boolean},
     Information: {type: String},
     additionalData: {type: Object},
     editorHeight: {type: Number}
@@ -69,9 +47,7 @@ export default {
   },
   methods: {
     init() {
-      if (this.Information) {
-        this.editorText = this.Information
-      }
+      this.editorText = this.Information
     },
     async imagesUploadHandler(blobInfo, success, failure) {
       let formRequest = new FormData()
