@@ -70,7 +70,7 @@ export default {
           })
     }
   },
-  beforeMount() {
+  mounted() {
     this.init()
   }
 }

@@ -235,6 +235,11 @@
             {{profileChangeError}}
           </ui5-message-strip>
         </div>&nbsp;
+        <div v-if="repairEmailEmpty.length > 0" >
+          <ui5-message-strip design="Negative" hide-close-button>
+            {{repairEmailEmpty}}
+          </ui5-message-strip>
+        </div>&nbsp;
         <ui5-button v-if="dialogTitle === 'Вход в систему'" design="Emphasized" submits>Войти</ui5-button>
         <ui5-button v-if="dialogTitle === 'Регистрация'"
                     design="Emphasized"
@@ -274,6 +279,7 @@ export default {
       dialogTitle: '',
       selectedRole: 'Преподаватели',
       personalAgree: false,
+      repairEmailEmpty: '',
       states: []
     }
   },
@@ -367,8 +373,31 @@ export default {
               this.$refs.dialog.show()
               preloader.usePreloader()
             })
-      } else {
-
+      }
+      else {
+        if (this.$refs.repair_email.value.length === 0) {
+          this.repairEmailEmpty = 'Заполните поле email'
+          return false
+        }
+        this.$refs.dialog.close()
+        preloader.usePreloader()
+        apiRequest(
+            this.$store.state.backendUrl + '/api/v1/password_reset/',
+            'POST',
+            false,
+            {'email': this.$refs.repair_email.value},
+            false,
+            false
+        )
+            .then(data => {
+              if (data.error) {
+                this.repairEmailEmpty = data.error
+                this.$refs.dialog.show()
+              } else {
+                showMessage('success', 'Письмо успешно отправлено на указанный почтовый ящик')
+              }
+              preloader.usePreloader()
+            })
       }
     },
     changeAuthType(type) {

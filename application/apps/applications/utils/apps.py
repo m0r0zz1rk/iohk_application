@@ -5,6 +5,7 @@ from typing import Optional
 from apps.applications.models import Apps
 from apps.authen.models import Profiles
 from apps.authen.utils.profile import ProfileUtils
+from apps.celery_app.tasks import app_change_status_task
 from apps.commons.consts.apps.app_statuses import APP_STATUSES, DRAFT, CREATED, SHIPPED, ACCEPTED, REJECTED, REVOKED, \
     COMPLETED
 
@@ -100,6 +101,8 @@ class AppsUtils:
                 case 'ACCEPTED' | 'REJECTED':
                     if app.status in [SHIPPED, COMPLETED]:
                         app.status = new_status
+                        if new_status == 'ACCEPTED':
+                            app.message = ''
 
                 case 'REVOKED':
                     app.status = REVOKED
@@ -110,11 +113,21 @@ class AppsUtils:
 
                 case _:
                     return False
-            if message is not None:
+            if message is not None and new_status != 'ACCEPTED':
                 app.message = message
             if result is not None:
                 app.result = result
             app.save()
+            app_change_status_task.delay(
+                app.object_id,
+                new_status,
+                message
+            )
             return True
         except Exception:
             return False
+
+    @staticmethod
+    def get_apps_for_event(event_id: uuid) -> Apps:
+        """Получение queryset заявок для мероприятия"""
+        return Apps.objects.filter(event_id=event_id)

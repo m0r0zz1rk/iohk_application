@@ -98,12 +98,29 @@ class EventsUtils:
 
     def get_list_of_potential_user_emails(self, event_id: uuid) -> Optional[list]:
         """Получение списка email потенциальных участников-пользователей АИС"""
-        #try:
-        email_list = []
-        event = self.get_event_by_object_id(event_id)
-        for category in event.categories.all():
-            for user in category.group.user_set.all():
-                email_list.append(user.email)
-        return email_list
-        #except Exception:
-        #    return None
+        try:
+            email_list = []
+            event = self.get_event_by_object_id(event_id)
+            for category in event.categories.all():
+                for user in category.group.user_set.all():
+                    email_list.append(user.email)
+            return email_list
+        except Exception:
+            return None
+
+    @staticmethod
+    def get_list_of_published_events() -> Events:
+        """Получение queryset с мероприятиями, статус которых 'Опубликовано'"""
+        return Events.objects.filter(event_status=PUBLISHED)
+
+    @staticmethod
+    def get_list_of_start_tomorrow_events() -> Events:
+        """Получение queryset с мероприятиями, которые начинаются завтра"""
+        return (Events.objects.filter(event_status=PUBLISHED)
+                .filter(date_start=datetime.date.today()+datetime.timedelta(days=1)))
+
+    @staticmethod
+    def get_list_of_start_today_events() -> Events:
+        """Получение queryset с мероприятиями, которые начинаются сегодня"""
+        return (Events.objects.filter(event_status=PUBLISHED)
+                .filter(date_start=datetime.date.today()))

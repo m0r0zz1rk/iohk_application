@@ -33,6 +33,8 @@ class AppChangeStatusSerializer(serializers.Serializer):
     )
     result = serializers.CharField(
         max_length=10000,
+        allow_null=True,
+        allow_blank=True,
         label='Результат заявки (HTML код из TinyMCE)'
     )
 

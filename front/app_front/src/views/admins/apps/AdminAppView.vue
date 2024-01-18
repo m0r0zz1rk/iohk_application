@@ -41,10 +41,11 @@
                   icon="decline"
                   @click="e => this.$refs.resultDialog.close(e.current)"></ui5-button>
     </ui5-bar>
-    <TinyMCE :key="componentKey" ref='resultTinyMCE'
-             v-bind:full="false"
-             v-bind:Information="resultHTML"
-             v-bind:editorHeight="500" />
+    <div v-if="resultHTML.length > 0">
+      <TinyMCE ref='resultTinyMCE'
+               v-bind:Information="resultHTML"
+               v-bind:editorHeight="500" />
+    </div>
     <div slot="footer" class="popover-footer">
       <div style="flex: 1;"></div>
       <ui5-button icon="complete"
@@ -86,8 +87,11 @@ export default {
       )
     },
     openResultDialog(result) {
-      this.resultHTML = result
-
+      if (result.length !== 0) {
+        this.resultHTML = result
+      } else {
+        this.resultHTML = '<p>Результат</p>'
+      }
       console.log(this.resultHTML)
       this.$refs.resultDialog.show()
       this.componentKey += 1

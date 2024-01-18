@@ -198,3 +198,12 @@ class ProfileUtils:
             if Profiles.objects.filter(django_user=User.objects.get(email=email)).exists():
                 return Profiles.objects.get(django_user=User.objects.get(email=email))
         return None
+
+    @staticmethod
+    def get_user_id_by_email(email: str) -> Optional[int]:
+        """Получение ID пользователя Django по его почте"""
+        try:
+            return User.objects.get(email=email).id
+        except Exception:
+            return None
+

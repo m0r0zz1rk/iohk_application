@@ -6,6 +6,8 @@ JWT_ALGORITHM = env.str('JWT_ALGORITHM', 'HS256')
 
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = env.int('JWT_ACCESS_TOKEN_EXPIRE_MINUTES', 15)
 
+AIS_ADDRESS = env.str('AIS_ADDRESS')
+
 DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -18,6 +20,7 @@ DJANGO_APPS = [
 REQ_APPS = [
     'corsheaders',
     'django_filters',
+    'django_rest_passwordreset',
     'drf_yasg',
     'import_export',
     'rest_framework',
@@ -27,7 +30,7 @@ REQ_APPS = [
 PROJECT_APPS = [
     'apps.admins',
     'apps.applications',
-    'apps.authen',
+    'apps.authen.apps.AuthenConfig',
     'apps.celery_app',
     'apps.commons',
     'apps.events',
@@ -54,7 +57,7 @@ ROOT_URLCONF = 'web_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR, 'templates/',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 from apps.authen.utils.profile import ProfileUtils
+from apps.celery_app.utils import UserEventEmailsUtils
 from apps.commons.consts.events.event_statuses import EVENT_STATUSES
 from apps.commons.consts.journals.journal_event_results import ERROR
 from apps.commons.consts.journals.journal_rec_types import CELERY_APP
@@ -33,6 +34,7 @@ def email_for_event_change_status_task(event_id: uuid, new_status: EVENT_STATUSE
                     text = (f'<br>В личном кабинете опубликовано новое мероприятие, в котором '
                             f'можно принять участие.'
                             f'<br>Наименование: <b>{event.name}</b>'
+                            f'<br>Тип мероприятия: <b>{event.event_type.name}</b>'
                             f'<br>Сроки подачи заявок: <b>{event.app_date_start.strftime('%d.%m.%Y')}-'
                             f'{event.app_date_end.strftime('%d.%m.%Y')}</b>'
                             f'<br>Сроки проведения: <b>{event.date_start.strftime('%d.%m.%Y')}-'
@@ -41,21 +43,30 @@ def email_for_event_change_status_task(event_id: uuid, new_status: EVENT_STATUSE
         if len(subject) > 0:
             if new_status == 'PUBLISHED':
                 for email in eu.get_list_of_potential_user_emails(event.object_id):
-                    profile = ProfileUtils.get_profile_by_user_email(email)
-                    if profile is not None:
-                        appeal = 'Уважаемая'
-                        if profile.sex:
-                            appeal = 'Уважаемый'
-                        message = f'{appeal} {profile.get_display_name()}!\n{text}'
-                        send_mail(
-                            subject,
-                            None,
-                            settings.EMAIL_HOST_USER,
-                            [email,],
-                            fail_silently=False,
-                            html_message=message
+                    if not UserEventEmailsUtils.check_event_published(
+                        ProfileUtils.get_user_id_by_email(email),
+                        event_id
+                    ):
+                        UserEventEmailsUtils.create_rec_event(
+                            ProfileUtils.get_user_id_by_email(email),
+                            event_id,
+                            'PUBLISHED'
                         )
-                        count += 1
+                        profile = ProfileUtils.get_profile_by_user_email(email)
+                        if profile is not None:
+                            appeal = 'Уважаемая'
+                            if profile.sex:
+                                appeal = 'Уважаемый'
+                            message = f'{appeal} {profile.get_display_name()}!\n{text}'
+                            send_mail(
+                                subject,
+                                None,
+                                settings.EMAIL_HOST_USER,
+                                [email,],
+                                fail_silently=False,
+                                html_message=message
+                            )
+                            count += 1
         return f'Выполнено, отправлено сообщений: {count}'
     except Exception:
         journal = JournalWriter(CELERY_APP)

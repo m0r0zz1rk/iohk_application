@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/v1/commons/', include('apps.commons.urls')),
     path('api/v1/reports/', include('apps.reports.urls')),
     path('api/v1/users/', include('apps.users.urls')),
+    path('api/v1/password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
 ]
 
 urlpatterns += static(static_url, document_root=static_root)
