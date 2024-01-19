@@ -46,7 +46,7 @@ class StateUtils:
     @staticmethod
     def check_states_exists() -> bool:
         """Проверка на наличие государств"""
-        return States.objects.exists()
+        return States.objects.count() > 0
 
     def add_base_states(self):
         """Добавление базовых государств в БД"""

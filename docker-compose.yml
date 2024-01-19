@@ -1,0 +1,103 @@
+version: '3.7'
+
+services:
+  drf:
+    restart: always
+    container_name: iohk-app-back
+    image: python:3.12
+    build:
+      context: ./application
+      dockerfile: Dockerfile
+    command: >
+      sh -c "
+        python manage.py makemigrations &&
+        python manage.py migrate &&
+        python manage.py add_base_states &&
+        python manage.py add_base_field_types &&
+        gunicorn web_app.wsgi:application --bind 0.0.0.0:8000
+      "
+    expose:
+      - 8000
+    env_file:
+      - ./application/web_app/.env
+    depends_on:
+      - db
+    volumes:
+      - iohk_app_media_volume:/home/drf/backend/media
+      - iohk_app_static_volume:/home/drf/backend/static
+  db:
+    container_name: iohk-app-db
+    image: postgres:16-alpine
+    volumes:
+      - iohk_app_postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./application/web_app/.env.db
+    ports:
+      - "15433:5432"
+  front:
+    container_name: iohk-app-front
+    image: node:21-alpine
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+      args:
+        - VITE_BACKEND_URL=http://localhost:1313/
+    volumes:
+      - iohk_app_vue_dist:/front/dist
+  nginx:
+    container_name: iohk-app-nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "1313:80"
+    volumes:
+      - iohk_app_media_volume:/home/drf/backend/media
+      - iohk_app_static_volume:/home/drf/backend/static
+      - iohk_app_vue_dist:/front/dist
+    depends_on:
+      - drf
+  celery:
+    container_name: iohk-app-celery
+    restart: always
+    image: python:3.12
+    build:
+      context: ./application
+      dockerfile: Dockerfile
+    command: celery -A web_app worker --beat --loglevel=info
+    volumes:
+      - .:/usr/src/app/application/
+    env_file:
+      - ./application/web_app/.env
+    depends_on:
+      - redis
+      - drf
+  celery-flower:
+    container_name: iohk-app-celery-flower
+    restart: always
+    image: python:3.12
+    build:
+      context: ./application
+      dockerfile: Dockerfile
+    command: celery -A web_app flower
+    ports:
+      - "5555:5555"
+    volumes:
+      - .:/usr/src/app/application/
+    env_file:
+      - ./application/web_app/.env
+    depends_on:
+      - redis
+      - drf
+  redis:
+    container_name: iohk-app-redis
+    restart: unless-stopped
+    image: redis:7.2-alpine
+    expose:
+      - "6379"
+
+volumes:
+  iohk_app_postgres_data:
+  iohk_app_media_volume:
+  iohk_app_static_volume:
+  iohk_app_vue_dist:
