@@ -25,9 +25,9 @@ def check_start_tomorrow_task():
         if events.count() > 0:
             for event in events:
                 tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-                subject = 'АИС подачи заявок ИОХК: Начало мероприятия состоится завтра'
-                text = (f'<br>Завтра, {tomorrow.strftime('%d.%m.%Y')}, состоится начало мероприятия '
-                        f'типа <b>{event.event_type.name}</b> под названием <b>"{event.name}"</b>.<br>'
+                subject = 'АИС "Мероприятия ИОХК": Начало мероприятия состоится завтра'
+                text = (f'<br>Завтра, {tomorrow.strftime('%d.%m.%Y')}, состоится начало мероприятия: '
+                        f'{event.event_type.name} <b>"{event.name}"</b>.<br>'
                         f'Сроки проведения мероприятия: <b>{event.date_start.strftime('%d.%m.%Y')}-'
                         f'{event.date_end.strftime('%d.%m.%Y')}</b>')
                 apps = apps_model.objects.filter(event_id=event.object_id)

@@ -79,9 +79,9 @@ services:
     build:
       context: ./application
       dockerfile: Dockerfile
-    command: celery -A web_app flower
-    ports:
-      - "5555:5555"
+    command: celery -A web_app flower --url_prefix='flower'
+    expose:
+      - "5555"
     volumes:
       - .:/usr/src/app/application/
     env_file:

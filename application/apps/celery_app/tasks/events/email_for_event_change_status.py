@@ -30,9 +30,8 @@ def email_for_event_change_status_task(event_id: uuid, new_status: EVENT_STATUSE
         match new_status:
             case 'PUBLISHED':
                 if event.check_date_in_app_dates():
-                    subject = 'АИС подачи заявок ИОХК: Опубликовано новое мероприятие'
-                    text = (f'<br>В личном кабинете опубликовано новое мероприятие, в котором '
-                            f'можно принять участие.'
+                    subject = 'АИС "Мероприятия ИОХК": Опубликовано новое мероприятие'
+                    text = (f'<br>Приглашаем Вас принять участие в мероприятии.'
                             f'<br>Наименование: <b>{event.name}</b>'
                             f'<br>Тип мероприятия: <b>{event.event_type.name}</b>'
                             f'<br>Сроки подачи заявок: <b>{event.app_date_start.strftime('%d.%m.%Y')}-'

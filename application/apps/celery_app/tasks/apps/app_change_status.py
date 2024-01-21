@@ -20,25 +20,25 @@ def app_change_status_task(app_id: uuid, status: APP_STATUSES, message=None):
         appl = apps_model.objects.get(object_id=app_id)
         match status:
             case 'ACCEPTED':
-                subject = 'АИС подачи заявок ИОХК: Заявка успешно принята'
-                text = (f'<br>Ваша заявка на участие в мероприятии <b>"{appl.event.name}"</b> '
-                        f'({appl.event.event_type.name}) успешно принята.'
+                subject = 'АИС "Мероприятия ИОХК": Заявка успешно принята'
+                text = (f'<br>Ваша заявка на участие в мероприятии: {appl.event.event_type.name} <b>"{appl.event.name}"</b> '
+                        f'успешно принята.'
                         f'<br>Напоминаем, что мероприятие будет проходить в период с '
                         f'{appl.event.date_start.strftime('%d.%m.%Y')} по '
                         f'{appl.event.date_end.strftime('%d.%m.%Y')} включительно')
 
             case 'REJECTED':
-                subject = 'АИС подачи заявок ИОХК: Заявка отклонена'
-                text = (f'<br>Ваша заявка на участие в мероприятии <b>"{appl.event.name}"</b> '
-                        f'({appl.event.event_type.name}) была отклонена.<br>Комментарий от администраторов '
-                        f'АИС:<br><b>{message}</b><br>Вы можете устранить замечания, и вновь подать заявку на '
+                subject = 'АИС "Мероприятия ИОХК": Заявка отклонена'
+                text = (f'<br>Ваша заявка на участие в мероприятии: {appl.event.event_type.name} <b>"{appl.event.name}"</b> '
+                        f'была отклонена.<br>Комментарий организатора: '
+                        f'<br><b>{message}</b><br>Вы можете устранить замечания, и вновь подать заявку на '
                         f'участие до {appl.event.app_date_end.strftime('%d.%m.%Y')} включительно.')
 
             case 'COMPLETED':
-                subject = 'АИС подачи заявок ИОХК: Заявка завершена'
-                text = (f'<br>Ваша заявка на участие в мероприятии <b>"{appl.event.name}"</b> '
-                        f'({appl.event.event_type.name}) успешно завершена.<br> Для ознакомления с результатом '
-                        f'откройте заявку в Вашем личном кабинете.')
+                subject = 'АИС "Мероприятия ИОХК": Мероприятие завершено'
+                text = (f'<br>Мероприятие: {appl.event.event_type.name} <b>"{appl.event.name}"</b> '
+                        f'успешно завершено.<br> Ознакомиться с результатом Вы можете в Личном кабинете '
+                        f'АИС "Мероприятия ИОХК", перейдя к соответствующей заявке')
 
             case _:
                 return 'Некорректный статус заявки'

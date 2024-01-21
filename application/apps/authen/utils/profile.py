@@ -178,10 +178,12 @@ class ProfileUtils:
             for gr in groups:
                 gr.user_set.remove(user)
             user.is_superuser = False
+            user.is_staff = False
             user.save()
             Group.objects.get(name=role).user_set.add(user)
             if role == 'Администраторы':
                 user.is_superuser = True
+                user.is_staff = True
                 user.save()
             return True
         return False

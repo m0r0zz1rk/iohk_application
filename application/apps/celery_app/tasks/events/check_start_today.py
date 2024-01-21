@@ -16,7 +16,7 @@ apps_model = apps.get_model('applications', 'Apps')
 
 @app.task
 def check_start_today_task():
-    """Проверка на наличие мероприятий, которые начинаются завтра,
+    """Проверка на наличие мероприятий, которые начинаются сегодня,
         и отправка сообщений пользователям"""
     try:
         events = EventsUtils.get_list_of_start_today_events()
@@ -24,9 +24,9 @@ def check_start_today_task():
         if events.count() > 0:
             for event in events:
                 today = datetime.date.today()
-                subject = 'АИС подачи заявок ИОХК: Начало мероприятия состоится сегодня'
-                text = (f'<br>Сегодня, {today.strftime('%d.%m.%Y')}, состоится начало мероприятия '
-                        f'типа <b>{event.event_type.name}</b> под названием <b>"{event.name}"</b>.<br>'
+                subject = 'АИС "Мероприятия ИОХК": Начало мероприятия состоится сегодня'
+                text = (f'<br>Сегодня, {today.strftime('%d.%m.%Y')}, состоится начало мероприятия: '
+                        f'{event.event_type.name} <b>"{event.name}"</b>.<br>'
                         f'Сроки проведения мероприятия: <b>{event.date_start.strftime('%d.%m.%Y')}-'
                         f'{event.date_end.strftime('%d.%m.%Y')}</b>')
                 apps = apps_model.objects.filter(event_id=event.object_id)
@@ -62,7 +62,7 @@ def check_start_today_task():
         journal.write(
             'Celery',
             ERROR,
-            f'Ошибка при отправки сообщений о завтрашнем начале мероприятия: '
+            f'Ошибка при отправки сообщений о сегодняшнем начале мероприятия: '
             f'{ExceptionHandling.get_traceback()}'
         )
         return f'Ошибка: {ExceptionHandling.get_traceback()}'

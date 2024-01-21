@@ -114,6 +114,7 @@ def check_groups_and_set_first_user_admin(instance, created, **kwargs):
     if created:
         if User.objects.count() == 1:
             instance.is_superuser = True
+            instance.is_staff = True
             instance.save()
             if not Group.objects.filter(name='Администраторы').exists():
                 admins = Group(name='Администраторы')

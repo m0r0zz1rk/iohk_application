@@ -27,6 +27,7 @@ class CountReportUtils:
         self.filters = filters
         self.apps_types = apps_types
         self.total_row = total_row
+        self.total_row_list = []
         self._generate_total_row_list()
 
     def _generate_total_row_list(self):
@@ -117,92 +118,91 @@ class CountReportUtils:
 
     def content_data(self) -> Optional[list]:
         """Заполнение листа отчета данными"""
-        #try:
-        excel = []
-        content = self._header_row()
-        event_ids = [rec['event_id'] for rec in self.events]
-        form_fields = (self.app_form_fields_model.objects.
-                       select_related('field').filter(app__event_id__in=event_ids))
-        match self.apps_types:
-            case 'user':
-                form_fields = form_fields.filter(field__user_app=True)
-            case 'part':
-                form_fields = form_fields.filter(field__user_app=False)
-        for index, event_id in enumerate(event_ids, start=1):
-            no_apps = False
-            applications = self.apps_model.objects.filter(event_id=event_id)
-            apps_count = applications.count()
-            if apps_count == 0:
-                no_apps = True
-            content.append({
-                'row': 2 + index,
-                'col': 1,
-                'value': EventsUtils().get_event_display_name(event_id),
-                'width': 100,
-                'align_center': True,
-                'merge': f'{2+index}:::2'
-            })
-            for f_id, f in enumerate(self.filters, start=1):
-                if no_apps:
-                    filter_count = 0
-                else:
-                    filter_count = (form_fields.filter(app__in=applications).
-                                    filter(field__name=f['field']).
-                                    filter(value__contains=f['value']).count())
+        try:
+            excel = []
+            content = self._header_row()
+            event_ids = [rec['event_id'] for rec in self.events]
+            form_fields = (self.app_form_fields_model.objects.
+                           select_related('field').filter(app__event_id__in=event_ids))
+            match self.apps_types:
+                case 'user':
+                    form_fields = form_fields.filter(field__user_app=True)
+                case 'part':
+                    form_fields = form_fields.filter(field__user_app=False)
+            for index, event_id in enumerate(event_ids, start=1):
+                no_apps = False
+                applications = self.apps_model.objects.filter(event_id=event_id)
+                apps_count = applications.count()
+                if apps_count == 0:
+                    no_apps = True
                 content.append({
                     'row': 2 + index,
-                    'col': 2 + f_id,
-                    'value': filter_count,
-                    'width': 30,
+                    'col': 1,
+                    'value': EventsUtils().get_event_display_name(event_id),
+                    'width': 100,
                     'align_center': True,
+                    'merge': f'{2+index}:::2'
                 })
-                self.add_to_total_row_list(f['id'], filter_count)
-            content.append({
-                'row': 2 + index,
-                'col': 3 + len(self.filters),
-                'value': apps_count,
-                'width': 30,
-                'align_center': True
-            })
-            self.add_to_total_row_list('total', apps_count)
-        print(self.total_row_list)
-        if self.total_row:
-            content.append({
-                'row': 3 + len(event_ids),
-                'col': 1,
-                'value': 'Итого',
-                'bold': True,
-                'width': 30,
-                'align_center': True,
-                'merge': f'{3 + len(event_ids)}:::2'
-            })
-            for f_id, f in enumerate(self.filters, start=1):
+                for f_id, f in enumerate(self.filters, start=1):
+                    if no_apps:
+                        filter_count = 0
+                    else:
+                        filter_count = (form_fields.filter(app__in=applications).
+                                        filter(field__name=f['field']).
+                                        filter(value__contains=f['value']).count())
+                    content.append({
+                        'row': 2 + index,
+                        'col': 2 + f_id,
+                        'value': filter_count,
+                        'width': 30,
+                        'align_center': True,
+                    })
+                    self.add_to_total_row_list(f['id'], filter_count)
+                content.append({
+                    'row': 2 + index,
+                    'col': 3 + len(self.filters),
+                    'value': apps_count,
+                    'width': 30,
+                    'align_center': True
+                })
+                self.add_to_total_row_list('total', apps_count)
+            if self.total_row:
                 content.append({
                     'row': 3 + len(event_ids),
-                    'col': 2 + f_id,
-                    'value': self.get_count_from_total_row_list(f['id']),
+                    'col': 1,
+                    'value': 'Итого',
+                    'bold': True,
+                    'width': 30,
+                    'align_center': True,
+                    'merge': f'{3 + len(event_ids)}:::2'
+                })
+                for f_id, f in enumerate(self.filters, start=1):
+                    content.append({
+                        'row': 3 + len(event_ids),
+                        'col': 2 + f_id,
+                        'value': self.get_count_from_total_row_list(f['id']),
+                        'bold': True,
+                        'width': 30,
+                        'align_center': True
+                    })
+                content.append({
+                    'row': 3 + len(event_ids),
+                    'col': 3 + len(self.filters),
+                    'value': self.get_count_from_total_row_list('total'),
                     'bold': True,
                     'width': 30,
                     'align_center': True
                 })
-            content.append({
-                'row': 3 + len(event_ids),
-                'col': 3 + len(self.filters),
-                'value': self.get_count_from_total_row_list('total'),
-                'bold': True,
-                'width': 30,
-                'align_center': True
+            title = 'Все заявки'
+            match self.apps_types:
+                case 'user':
+                    title = 'Пользователи'
+                case 'part':
+                    title = 'Участники'
+            excel.append({
+                'title': title,
+                'sheet_data': content
             })
-        title = 'Все заявки'
-        match self.apps_types:
-            case 'user':
-                title = 'Пользователи'
-            case 'part':
-                title = 'Участники'
-        excel.append({
-            'title': title,
-            'sheet_data': content
-        })
-        return excel
-        #except Exception:
-        #    return None
+            return excel
+        except Exception:
+            return None
