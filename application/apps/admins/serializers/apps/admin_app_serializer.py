@@ -22,7 +22,10 @@ class AdminAppsListSerializer(serializers.ModelSerializer):
     )
 
     def get_fio(self, obj):
-        return obj.profile.get_display_name()
+        try:
+            return obj.profile.get_display_name()
+        except Exception:
+            return '(Удаленный пользователь)'
 
     def get_event_type(self, obj):
         return obj.event.event_type.name

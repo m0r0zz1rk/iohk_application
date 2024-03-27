@@ -53,13 +53,17 @@ class Apps(BaseTable):
     )
 
     def __str__(self):
-        return (f'Заявка от пользователя "{self.profile.get_display_name()}" на участие в мероприятии '
+        if self.profile:
+            display = self.profile.get_display_name()
+        else:
+            display = '(Данные не найдены)'
+        return (f'Заявка от пользователя "{display}" на участие в мероприятии '
                 f'"{self.event.name}" ({self.event.date_start.strftime("%d.%m.%Y")} - '
                 f'{self.event.date_end.strftime("%d.%m.%Y")})')
 
     class Meta:
         verbose_name = 'Заявка на участие в мероприятие'
-        verbose_name_plural = 'Заявки на участие в мероприятия'
+        verbose_name_plural = 'Заявки на участие в мероприятиях'
 
 
 @receiver(post_save, sender=Apps)

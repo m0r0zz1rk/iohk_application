@@ -1,0 +1,194 @@
+@media screen and (max-width: 6000px) {
+
+    /* Стандартные свойства ui5/webcomponents и размер шрифта*/
+    body {
+        --sapFontSize: 1.75rem;
+        --sapFontHeader5Size: 2.5rem;
+        --_ui5-v1-22-0-rc-3_calendar_height: 30rem; /* Высота выпадающего календаря */
+        --_ui5-v1-22-0-rc-3_calendar_width: 30rem; /* Длина выпадающего календаря */
+        --sapFontLargeSize: 2rem;
+        --sapFontSmallSize: 2rem;
+        --_ui5-v1-22-0-rc-3_list_item_title_size: 2rem;
+        --_ui5-v1-22-0-rc-3_switch_text_with_label_font_size: 1.85rem;
+        --_ui5-v1-22-0-rc-3_switch_height: 2rem;
+        --_ui5-v1-22-0-rc-3_switch_with_label_width: 5rem;
+        --_ui5-v1-22-0-rc-3_bar_base_height: 75px;
+        --_ui5-v1-22-0-rc-3_dialog_footer_height: 75px;
+        --_ui5-v1-22-0-rc-3_icon_transform_scale: scale(1.75, 1.75); /* Увеличение иконок */
+        --_ui5-v1-22-0-rc-3_shellbar_menu_button_title_font_size: 2rem;
+        --_ui5-v1-22-0-rc-3_tc_item_text_only_height: 3rem;
+        --_ui5-v1-22-0-rc-3_tc_item_text_line_height: 2rem;
+        font-size: 38px;
+    }
+
+    /* Компоненты ui5 */
+    ui5-button {
+        height: 50px;
+    }
+
+    ui5-select, ui5-input, ui5-date-picker, ui5-daterange-picker, ui5-datetime-picker {
+        height: 60px;
+        font-size: 30px;
+    }
+
+    ui5-switch::part(slider) {
+        height: 3rem;
+        width: 4.5rem;
+    }
+
+    .ui5-popup-header-root, .ui5-popup-footer-root, :host([header-text]) .ui5-popup-header-text {
+        font-size: 2.5rem;
+    }
+
+    ui5-side-navigation {
+        top: 2em;
+        width: 500px;
+    }
+
+    ui5-side-navigation[collapsed] {
+        width: 2em;
+    }
+
+    ui5-shellbar {
+        height: 2.25em;
+    }
+
+    ui5-shellbar::part(root) {
+        height: 5rem
+    }
+
+    .shellbar-logo {
+        height: 3rem;
+        width: 3rem;
+    }
+
+    ui5-avatar{
+        height: 3rem;
+        width: 3rem;
+    }
+
+    ui5-shellbar::part(root) {
+        padding-inline-start: 2rem;
+        padding-inline-end: 2rem;
+    }
+
+    #apps-main-card-list::part(icon) {
+        padding-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    ui5-list::part(native-li) {
+        height: 5rem;
+    }
+
+    #apps-main-card-li::part(content) {
+        height: 5rem;
+    }
+
+    #apps-main-card-li::part(title) {
+        font-size: 32px;
+        height: 5rem;
+    }
+
+    ui5-card-header::part(title) {
+        font-size: 32px;
+    }
+
+    ui5-title{
+        font-size: 32px;
+    }
+
+    ui5-tabcontainer {
+        height: 3rem;
+    }
+
+    ui5-table-cell {
+        font-size: 26px;
+    }
+
+    ui5-badge {
+        font-size: 26px;
+    }
+
+    /* Разное */
+    .login-dialog {
+        width: 40%;
+    }
+
+    .base-div {
+        transform: scale(3, 3);
+    }
+
+    .profile-actions-title {
+        padding: 0.25rem 1rem 0.2rem 1rem;
+        font-size: 32px;
+    }
+
+    .profile-menu-list {
+        height: 150px;
+        width: 250px;
+    }
+
+    .profile-menu-text {
+        font-size: 30px;
+    }
+
+    .content-div {
+        top: 7rem;
+        left: 7rem;
+        width: calc(97vw - 4rem);
+        height: calc(97vh - 5rem);
+    }
+
+    .apps-main-card-list{
+        height: 400px;
+    }
+
+    .main-grid-container{
+        grid-template-columns: repeat(2, 3fr);
+        gap: 1rem;
+    }
+
+    .main-grid-card{
+        height: 500px;
+    }
+
+    .table-icon {
+        transform: scale(2, 2);
+    }
+
+    .table-filter-icon, .table-decline-icon {
+        transform: scale(1.5, 1.5);
+    }
+
+    .add-edit-dialog, .find-event-dialog {
+        width: 60%;
+    }
+
+    .tab-divs-height, .info-app-container-height, .info-app-height {
+        height: 75vh;
+    }
+
+    .info-app-height {
+        width: 25%;
+    }
+
+    .app-info {
+        font-size: 1.75rem;
+    }
+
+    .grid-container-adaptive {
+        grid-template-columns: repeat(3, 3fr);
+        gap: 1rem;
+    }
+
+    .detail-event-info-div {
+        height: 65vh;
+        overflow-x: auto
+    }
+
+    .user-app-field-div {
+        width: 75%;
+    }
+
+}

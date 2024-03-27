@@ -82,18 +82,24 @@ class Profiles(BaseTable):
     )
 
     def __str__(self):
-        data = f'{self.surname} {self.name}'
-        if len(str(self.patronymic)) > 0:
-            data = f'{data} {self.patronymic}'
-        data = f'{data} ({self.phone})'
-        return data
+        try:
+            data = f'{self.surname} {self.name}'
+            if len(str(self.patronymic)) > 0:
+                data = f'{data} {self.patronymic}'
+            data = f'{data} ({self.phone})'
+            return data
+        except Exception:
+            return '(Данные не найдены)'
 
     def get_display_name(self):
         """Получение ФИО пользователя"""
-        display_name = f'{self.surname} {self.name}'
-        if len(self.patronymic) > 0:
-            display_name += f' {self.patronymic}'
-        return display_name
+        try:
+            display_name = f'{self.surname} {self.name}'
+            if len(self.patronymic) > 0:
+                display_name += f' {self.patronymic}'
+            return display_name
+        except Exception:
+            return '(Данные не найдены)'
 
     class Meta:
         verbose_name = 'Профиль пользователя'

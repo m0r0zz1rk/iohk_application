@@ -3,7 +3,7 @@ version: '3.7'
 services:
   drf:
     restart: always
-    container_name: iohk-app-back
+    container_name: iohk-events-back
     image: python:3.12
     build:
       context: ./application
@@ -23,42 +23,38 @@ services:
     depends_on:
       - db
     volumes:
-      - iohk_app_media_volume:/home/drf/backend/media
-      - iohk_app_static_volume:/home/drf/backend/static
+      - iohk_events_media_volume:/home/drf/backend/media
+      - iohk_events_static_volume:/home/drf/backend/static
   db:
     container_name: iohk-app-db
     image: postgres:16-alpine
     volumes:
-      - iohk_app_postgres_data:/var/lib/postgresql/data
+      - iohk_events_postgres_data:/var/lib/postgresql/data
     env_file:
       - ./application/web_app/.env.db
-    ports:
-      - "15433:5432"
   front:
-    container_name: iohk-app-front
+    container_name: iohk-events-front
     image: node:21-alpine
     build:
       context: ./front
       dockerfile: Dockerfile
-      args:
-        - VITE_BACKEND_URL=http://localhost:1313/
     volumes:
-      - iohk_app_vue_dist:/front/dist
+      - iohk_events_vue_dist:/front/dist
   nginx:
-    container_name: iohk-app-nginx
+    container_name: iohk-events-nginx
     build:
       context: ./nginx
       dockerfile: Dockerfile
     ports:
-      - "1313:80"
+      - "1314:80"
     volumes:
-      - iohk_app_media_volume:/home/drf/backend/media
-      - iohk_app_static_volume:/home/drf/backend/static
-      - iohk_app_vue_dist:/front/dist
+      - iohk_events_media_volume:/home/drf/backend/media
+      - iohk_events_static_volume:/home/drf/backend/static
+      - iohk_events_vue_dist:/front/dist
     depends_on:
       - drf
   celery:
-    container_name: iohk-app-celery
+    container_name: iohk-events-celery
     restart: always
     image: python:3.12
     build:
@@ -73,7 +69,7 @@ services:
       - redis
       - drf
   celery-flower:
-    container_name: iohk-app-celery-flower
+    container_name: iohk-events-celery-flower
     restart: always
     image: python:3.12
     build:
@@ -90,14 +86,14 @@ services:
       - redis
       - drf
   redis:
-    container_name: iohk-app-redis
+    container_name: iohk-events-redis
     restart: unless-stopped
     image: redis:7.2-alpine
     expose:
       - "6379"
 
 volumes:
-  iohk_app_postgres_data:
-  iohk_app_media_volume:
-  iohk_app_static_volume:
-  iohk_app_vue_dist:
+  iohk_events_postgres_data:
+  iohk_events_media_volume:
+  iohk_events_static_volume:
+  iohk_events_vue_dist:

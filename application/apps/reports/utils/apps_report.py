@@ -2,6 +2,7 @@ import uuid
 from typing import Optional
 
 from django.apps import apps
+from django.db.models import Max
 
 from apps.commons.utils.django.exception import ExceptionHandling
 
@@ -84,11 +85,13 @@ class AppsReportUtils:
             if self.apps_types in ['part', 'all']:
                 fields = self._get_fields_queryset(False)
                 content = self._apps_header_row(False)
-                rows = self.app_form_fields_model.objects.filter(app_id=applications.first().object_id). \
-                    filter(field_id=fields.first().object_id).values_list('rec_id', flat=True).distinct()
+                rows = self.app_form_fields_model.objects.filter(app_id__in=[
+                    applic.object_id for applic in applications
+                ]).aggregate(Max('rec_id'))
                 counter = 0
                 for app_index, app in enumerate(applications, start=2):
-                    for row in rows:
+                    row = 1
+                    while row <= rows['rec_id__max']:
                         if self.app_form_fields_model.objects.filter(app_id=app.object_id). \
                                 filter(field_id=fields.first().object_id).filter(rec_id=row).exists():
                             for field_index, field in enumerate(fields, start=1):
@@ -106,6 +109,7 @@ class AppsReportUtils:
                                 }
                                 content.append(cell)
                             counter += 1
+                        row += 1
                     counter -= 1
                 excel.append({
                     'title': 'Участники',

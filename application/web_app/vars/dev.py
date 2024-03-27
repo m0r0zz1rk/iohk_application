@@ -2,6 +2,8 @@ from .swg import *
 
 DEBUG = True
 
+CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
+
 ALLOWED_HOSTS = ['*']
 
 DATABASES = {

@@ -1,6 +1,8 @@
 from .swg import *
 
-DEBUG = True
+DEBUG = False
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://events.iohk.ru', 'https://events.iohk.ru']
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 

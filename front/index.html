@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/media/favicon.ico" />
+    <link href="/css/message-strips.css" rel="stylesheet" type="text/css">
+    <link href="/css/ui5.css" rel="stylesheet" type="text/css">
+    <link href="/css/adaptive.css" rel="stylesheet" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>АИС "Мероприятия ИОХК"</title>
+</head>
+<body>
+<div id="app"></div>
+<div class="strips">
+    <div id="info-strip" class="strip-hidden">
+        <ui5-message-strip design="Information" hide-close-button>
+            <b><div id="info-message"></div></b>
+        </ui5-message-strip>
+    </div>
+    <div id="load-strip"  class="strip-hidden">
+        <ui5-message-strip design="Warning" hide-close-button>
+            <img src="src/assets/loading.gif" alt="Подождите" width="16" height="16" slot="icon">
+            Пожалуйста, подождите
+        </ui5-message-strip>
+    </div>
+    <div id="error-strip"  class="strip-hidden">
+        <ui5-message-strip design="Negative" hide-close-button>
+            <b><div id="error-message"></div></b>
+        </ui5-message-strip>
+    </div>
+    <div id="success-strip"  class="strip-hidden">
+        <ui5-message-strip design="Positive" hide-close-button>
+            <b><div id="success-message"></div></b>
+        </ui5-message-strip>
+    </div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

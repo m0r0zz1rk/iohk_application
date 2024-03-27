@@ -15,8 +15,6 @@ env.read_env(os.path.join(SETTINGS_DIR, '.env'))
     выбираем нужную конфигурацию проекта
 """
 
-CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
-
 if env.str('START') == 'PROD':
     print('Server running in production\n')
     from .vars.prod import *
